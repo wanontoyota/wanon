@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>wanon</title>
+<title>和のん</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="和のん">
+<meta name="theme-color" content="#6b4a28">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700&family=Poppins:wght@500;600&display=swap');
 :root{
@@ -157,6 +164,8 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .pt-actions input{flex:1;border:1px solid var(--line);border-radius:10px;padding:11px;font-family:inherit;font-size:14px}
 .pt-actions button{border:none;background:var(--olive);color:#fff;border-radius:10px;padding:11px 16px;font-weight:700;font-family:inherit;cursor:pointer}
 .pt-hint{font-size:11.5px;color:var(--on-wood-mut);margin:12px 4px 0;text-align:center}
+.pt-line{display:block;text-align:center;background:#06c755;color:#fff;font-weight:800;font-family:"Zen Maru Gothic",inherit;border-radius:14px;padding:16px;margin:16px 0 0;text-decoration:none;box-shadow:0 8px 20px rgba(6,199,85,.32);letter-spacing:.03em}
+.pt-line:active{transform:scale(.98)}
 
 /* ===== アクセス ===== */
 .map-wrap{border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin:6px 0 0;height:220px}
@@ -244,12 +253,16 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
       <div class="stamps" id="stamps"></div>
       <div class="pt-reward" id="ptReward"></div>
     </div>
-    <div class="pt-actions">
-      <input type="password" id="ptPin" placeholder="お店のPINを入力" inputmode="numeric">
-      <button id="ptAdd">スタンプ</button>
+    <a id="ptLineBtn" class="pt-line" target="_blank" rel="noopener" style="display:none">LINEでスタンプを貯める</a>
+    <p class="pt-hint" id="ptLineHint" style="display:none">スタンプはLINEのショップカードに貯まります。上のボタンからカードを開いてください（端末を変えても引き継がれます）。</p>
+    <div id="ptLocal">
+      <div class="pt-actions">
+        <input type="password" id="ptPin" placeholder="お店のPINを入力" inputmode="numeric">
+        <button id="ptAdd">スタンプ</button>
+      </div>
+      <p class="pt-hint">来店時にお店の方がPINを入力してスタンプを押します。<br>※試作版：スタンプはこの端末に保存されます。</p>
+      <div style="text-align:center;margin-top:10px"><button id="ptReset" style="background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline">スタンプをリセット</button></div>
     </div>
-    <p class="pt-hint">来店時にお店の方がPINを入力してスタンプを押します。<br>※試作版：スタンプはこの端末に保存されます。</p>
-    <div style="text-align:center;margin-top:10px"><button id="ptReset" style="background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline">スタンプをリセット</button></div>
   </section>
 
   <!-- ========== アクセス ========== -->
@@ -446,11 +459,19 @@ const PKEY='wanon_stamps';
 function getStamps(){try{return parseInt(localStorage.getItem(PKEY)||'0',10)||0;}catch(e){return window.__st||0;}}
 function setStamps(n){try{localStorage.setItem(PKEY,String(n));}catch(e){window.__st=n;}}
 function renderPoint(){
-  const p=CONFIG.point;$('ptTitle').textContent=p.title;$('ptSub').textContent=p.sub;
+  const p=CONFIG.point||{};$('ptTitle').textContent=p.title||'';
+  if(p.lineUrl){
+    $('ptSub').textContent=p.sub||'LINEでスタンプが貯まります';
+    $('ptLineBtn').href=p.lineUrl;$('ptLineBtn').style.display='';$('ptLineHint').style.display='';$('ptLocal').style.display='none';
+    let h='';for(let i=0;i<(p.total||10);i++)h+='<div class="stamp"></div>';$('stamps').innerHTML=h;
+    $('ptReward').textContent=p.reward||'';return;
+  }
+  $('ptLineBtn').style.display='none';$('ptLineHint').style.display='none';$('ptLocal').style.display='';
+  $('ptSub').textContent=p.sub;
   const n=Math.min(getStamps(),p.total);let h='';
   for(let i=0;i<p.total;i++){h+='<div class="stamp'+(i<n?' on':'')+'">'+(i<n?'●':'')+'</div>';}
   $('stamps').innerHTML=h;
-  $('ptReward').textContent=n>=p.total?p.reward:('あと '+(p.total-n)+' 個で '+p.reward.replace(/^🎁\s*/,''));
+  $('ptReward').textContent=n>=p.total?p.reward:('あと '+(p.total-n)+' 個で '+(p.reward||'').replace(/^🎁\s*/,''));
 }
 $('ptAdd').onclick=()=>{const p=CONFIG.point;if($('ptPin').value!==String(p.pin)){alert('PINが違います');return;}
   let n=getStamps();if(n>=p.total)n=0; n++; setStamps(n);$('ptPin').value='';renderPoint();

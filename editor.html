@@ -120,6 +120,8 @@ a{color:var(--ac)}
         <div><label>お店のPIN</label><input type="text" id="pt_pin"></div>
       </div>
       <label>特典テキスト</label><input type="text" id="pt_reward">
+      <label>LINEショップカードURL（任意）</label><input type="text" id="pt_line" placeholder="https://... 空欄なら端末保存スタンプ">
+      <p style="font-size:11px;color:var(--muted);margin:4px 2px 0;line-height:1.6">LINE公式アカウントの「ショップカード」URLを入れると、上のスタンプ欄が「LINEでスタンプを貯める」ボタンに切り替わります。空欄のままならこの端末に保存する簡易スタンプになります。</p>
     </div>
 
     <div class="sec"><h2>アクセス</h2>
@@ -207,7 +209,7 @@ var DEFAULT_CONFIG = {
   ],
   "orderVia": { "type": "line", "url": "https://www.instagram.com/wanon.toyota/" },
   "shopNote": "オーナーの作品を掲載予定です。気になる作品は「注文・お問い合わせ」からメッセージください。お支払い・お渡し方法は個別にご案内します。",
-  "point": { "title": "スタンプカード", "sub": "10個たまると特典！", "total": 10, "pin": "1234", "reward": "🎁 コンプリートで特典プレゼント" },
+  "point": { "title": "スタンプカード", "sub": "10個たまると特典！", "total": 10, "pin": "1234", "reward": "🎁 コンプリートで特典プレゼント", "lineUrl": "" },
   "address": "愛知県豊田市松平志賀町丸山5-4",
   "mapQuery": "Kitchen&bar 和のん 愛知県豊田市松平志賀町丸山5-4",
   "tel": "0565-77-8206",
@@ -234,7 +236,7 @@ function initBasic(){
   $('f_footer').value=state.footer||''; state.theme=state.theme||{}; $('f_brand').value=state.theme.brand||'#8f7c5b';
   var c=state.contact; // none
   state.point=state.point||{}; $('pt_title').value=state.point.title||''; $('pt_sub').value=state.point.sub||'';
-  $('pt_total').value=state.point.total||10; $('pt_pin').value=state.point.pin||''; $('pt_reward').value=state.point.reward||'';
+  $('pt_total').value=state.point.total||10; $('pt_pin').value=state.point.pin||''; $('pt_reward').value=state.point.reward||''; $('pt_line').value=state.point.lineUrl||'';
   $('ac_addr').value=state.address||''; $('ac_map').value=state.mapQuery||''; $('ac_tel').value=state.tel||'';
   state.orderVia=state.orderVia||{type:'line',url:''}; $('ov_type').value=state.orderVia.type||'line'; $('ov_url').value=state.orderVia.url||'';
   $('f_shopnote').value=state.shopNote||'';
@@ -253,6 +255,7 @@ bindV('pt_sub',function(v){state.point.sub=v;});
 $('pt_total').addEventListener('input',function(){state.point.total=parseInt($('pt_total').value,10)||10;pushPreview();});
 bindV('pt_pin',function(v){state.point.pin=v;});
 bindV('pt_reward',function(v){state.point.reward=v;});
+bindV('pt_line',function(v){state.point.lineUrl=v.trim();});
 bindV('ac_addr',function(v){state.address=v;});
 bindV('ac_map',function(v){state.mapQuery=v;});
 bindV('ac_tel',function(v){state.tel=v;});
