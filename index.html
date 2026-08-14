@@ -24,9 +24,12 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
-body{font-family:"Zen Kaku Gothic New",sans-serif;color:var(--ink);
-  background-color:var(--bg);background-image:linear-gradient(rgba(46,29,13,.34),rgba(46,29,13,.34)),var(--parquet);background-size:cover;background-position:center;background-attachment:fixed;
+body{font-family:"Zen Kaku Gothic New",sans-serif;color:var(--ink);background:var(--bg);
   padding-bottom:calc(72px + env(safe-area-inset-bottom));line-height:1.7;-webkit-text-size-adjust:100%}
+/* 背景は固定レイヤー（スマホでもスクロールしない）。上のカードだけが動く */
+body::before{content:"";position:fixed;inset:0;z-index:-1;
+  background:linear-gradient(rgba(46,29,13,.34),rgba(46,29,13,.34)),var(--parquet);
+  background-size:cover;background-position:center}
 img{max-width:100%;display:block}
 .app{max-width:480px;margin:0 auto;position:relative;min-height:100vh}
 .view{display:none;padding:0 16px 24px}
@@ -48,14 +51,11 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .hero.brand{margin:0 -16px 0;padding:30px 18px 26px;text-align:center;position:relative;
   background:transparent;box-shadow:none;color:#3a2810}
 .hero.brand::before{content:"";position:absolute;top:0;left:0;right:0;height:12px;background:var(--seigaiha-indigo);background-size:36px 18px;opacity:.95;z-index:2}
-.hero.brand::after{content:"";position:absolute;left:50%;top:24px;transform:translateX(-50%);width:78%;height:66%;border-radius:50%;
-  background:radial-gradient(closest-side, rgba(255,239,206,.6), rgba(255,239,206,0) 72%);filter:blur(16px);z-index:0;pointer-events:none}
-.hero-glass{position:relative;z-index:1;
-  background:linear-gradient(155deg, rgba(255,255,255,.32), rgba(255,255,255,.12) 60%, rgba(255,255,255,.18));
-  backdrop-filter:blur(12px) saturate(165%);-webkit-backdrop-filter:blur(12px) saturate(165%);
-  border:1px solid rgba(255,255,255,.55);border-radius:26px;padding:22px 18px 20px;
-  box-shadow:0 16px 38px rgba(20,12,4,.32), inset 0 1.5px 0 rgba(255,255,255,.75), inset 0 -1px 0 rgba(255,255,255,.12)}
-.hero.brand .logo{width:120px;height:120px;border-radius:24px;background:#fff;border:2px solid rgba(255,255,255,.95);object-fit:contain;padding:7px;margin:0 auto 12px;box-shadow:0 10px 24px rgba(0,0,0,.32)}
+.hero.brand::after{content:none}
+.hero-glass{position:relative;z-index:1;background:#ffffff;
+  border:1px solid var(--line);border-radius:26px;padding:22px 18px 20px;
+  box-shadow:0 12px 30px rgba(20,12,4,.18)}
+.hero.brand .logo{width:120px;height:120px;border-radius:24px;background:#fff;border:1px solid #ececec;object-fit:contain;padding:7px;margin:0 auto 12px;box-shadow:0 8px 20px rgba(60,40,15,.18)}
 .hero.brand .logo-ph{width:120px;height:120px;border-radius:24px;background:#fff;border:2px solid rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--brand-d);font-family:"Zen Maru Gothic";font-size:36px;box-shadow:0 10px 24px rgba(0,0,0,.32)}
 .hero.brand h1{font-family:"Zen Maru Gothic";font-size:25px;margin:0 0 5px;color:#39270f;text-shadow:0 1px 2px rgba(255,252,246,.6)}
 .hero.brand .tag{font-size:13px;color:#5c4824;text-shadow:0 1px 2px rgba(255,252,246,.5)}
