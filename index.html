@@ -177,6 +177,9 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .sns{display:flex;gap:10px;margin:14px 0 0}
 .sns a{flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-decoration:none;color:var(--ink);font-size:12px;font-weight:700;box-shadow:var(--shadow)}
 .sns a .ico{width:22px;height:22px;margin:0 auto 5px;color:var(--brand)}
+.home-sns{margin:12px 0 0}
+.home-sns a{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:9px;padding:14px}
+.home-sns a .ico{margin:0}
 
 /* ===== 下タブ ===== */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(250,246,238,.72);
@@ -196,6 +199,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
   <section class="view active" id="v-home">
     <div class="hero brand" id="hero"></div>
     <div class="status" id="statusBox"><span class="dot"></span><div><div class="s-main" id="stMain"></div><div class="s-sub" id="stSub"></div></div></div>
+    <div class="sns home-sns" id="snsHome"></div>
     <div id="homeNews"></div>
     <div class="tiles" id="tiles"></div>
     <div class="story">
@@ -485,7 +489,9 @@ $('addrV').textContent=CONFIG.address;
 $('addrRow').href='https://maps.google.com/?q='+encodeURIComponent(CONFIG.address);
 $('telV').textContent=CONFIG.tel; $('telRow').href='tel:'+(CONFIG.tel||'').replace(/[^0-9+]/g,'');
 $('hoursV').textContent=CONFIG.hours;
-$('snsRow').innerHTML=(CONFIG.sns||[]).map(s=>'<a href="'+esc(s.url)+'" target="_blank" rel="noopener"><div class="ico">'+svg(s.type)+'</div>'+esc(s.label)+'</a>').join('');
+var snsHTML=(CONFIG.sns||[]).map(s=>'<a href="'+esc(s.url)+'" target="_blank" rel="noopener"><div class="ico">'+svg(s.type)+'</div>'+esc(s.label)+'</a>').join('');
+$('snsRow').innerHTML=snsHTML;
+var snsH=$('snsHome');if(snsH){snsH.innerHTML=snsHTML;snsH.style.display=snsHTML?'':'none';}
 
 /* ---- お知らせ・イベント ---- */
 const WD=['日','月','火','水','木','金','土'];
