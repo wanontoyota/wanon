@@ -38,7 +38,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;
   background:linear-gradient(rgba(46,29,13,.34),rgba(46,29,13,.34)),var(--parquet);
   background-size:cover;background-position:center}
 img{max-width:100%;display:block}
-.app{max-width:480px;margin:0 auto;position:relative;min-height:100vh}
+.app{max-width:480px;margin:0 auto;position:relative;min-height:100vh;padding-top:calc(env(safe-area-inset-top) + 18px)}
 .view{display:none;padding:0 16px 24px}
 .view.active{display:block}
 h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 4px 4px;color:var(--on-wood)}
@@ -55,9 +55,9 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .hero.photo h1{font-family:"Zen Maru Gothic";font-size:28px;margin:0 0 4px;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,.4)}
 .hero.photo .tag{font-size:13px;opacity:.95;text-shadow:0 1px 6px rgba(0,0,0,.5)}
 /* ロゴ主役ヘッダー（写真なしの時） */
-.hero.brand{margin:0 -16px 0;padding:calc(30px + env(safe-area-inset-top)) 18px 26px;text-align:center;position:relative;
+.hero.brand{margin:0 -16px 0;padding:26px 18px 26px;text-align:center;position:relative;
   background:transparent;box-shadow:none;color:#3a2810}
-.hero.brand::before{content:"";position:absolute;top:env(safe-area-inset-top);left:0;right:0;height:12px;background:var(--seigaiha-indigo);background-size:36px 18px;opacity:.95;z-index:2}
+.hero.brand::before{content:"";position:absolute;top:0;left:0;right:0;height:12px;background:var(--seigaiha-indigo);background-size:36px 18px;opacity:.95;z-index:2}
 .hero.brand::after{content:none}
 .hero-glass{position:relative;z-index:1;background:#ffffff;
   border:1px solid var(--line);border-radius:26px;padding:22px 18px 20px;
