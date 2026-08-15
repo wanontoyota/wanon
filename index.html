@@ -216,16 +216,34 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .msg-pending{font-size:11.5px;color:var(--muted);margin:9px 0 0 14px}
 .msg-empty{font-size:12.5px;color:var(--on-wood-mut);text-align:center;margin:10px 0}
 .msg-mineh{font-family:"Zen Maru Gothic";font-size:13px;color:var(--on-wood);font-weight:700;margin:22px 4px 10px}
+/* おたより：お店の管理モード */
+.msg-ownerlink{background:rgba(250,246,238,.85);border:1px solid var(--line);color:var(--brand-d);border-radius:999px;padding:9px 18px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer}
+.msg-loginform{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px auto 0;max-width:340px;text-align:left;box-shadow:var(--shadow)}
+.msg-loginform input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;font-family:inherit;font-size:14px;margin-bottom:8px;background:#fff;color:var(--ink)}
+.msg-ownerbar{background:#3a2b17;color:#f4ebd8;border-radius:14px;padding:12px 14px;font-size:12px;line-height:1.6;margin-bottom:14px;box-shadow:var(--shadow)}
+.msg-ownerbar .ob-row{display:flex;gap:8px;align-items:center;margin-top:10px}
+.msg-edit-btn{flex:1;text-align:center;background:#c9a24e;color:#241a0e;border:none;border-radius:10px;padding:10px;font-weight:800;font-family:inherit;font-size:13px;cursor:pointer;text-decoration:none}
+.msg-logout{background:rgba(255,255,255,.16);color:#fff;border:none;border-radius:10px;padding:10px 14px;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer}
+.msg-card.owner{border-color:#e3d7be}
+.orep{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:inherit;font-size:14px;margin:11px 0 0;min-height:58px;resize:vertical;background:#fff;color:var(--ink)}
+.msg-ownerchk{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);margin:9px 0}
+.msg-ownerchk input{width:auto;margin:0}
+.msg-ownerbtns{display:flex;gap:8px}
+.msg-osave{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:800;font-family:inherit;font-size:13.5px;cursor:pointer}
+.msg-osave:disabled{opacity:.5}
+.msg-odel{background:#fdecea;color:#c0392b;border:none;border-radius:10px;padding:10px 14px;font-weight:700;font-family:inherit;font-size:13px;cursor:pointer;margin-left:auto}
+.msg-ownerh{font-family:"Zen Maru Gothic";font-size:14px;color:var(--on-wood);font-weight:700;margin:0 4px 12px}
 
 /* ===== 下タブ ===== */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(250,246,238,.72);
   backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
   border-top:1px solid rgba(255,255,255,.5);box-shadow:0 -6px 20px rgba(30,18,6,.12);
   display:flex;max-width:480px;margin:0 auto;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
-.nav button{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;
+.nav button{flex:1;background:none;border:none;position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;
   padding:6px 2px;color:var(--muted);font-family:inherit;font-size:10px;font-weight:700;cursor:pointer}
 .nav button.active{color:var(--brand)}
 .nav .ico{width:23px;height:23px}
+.nav-badge{position:absolute;top:-3px;left:50%;margin-left:4px;min-width:16px;height:16px;background:#c0392b;color:#fff;border-radius:9px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .foot{text-align:center;color:var(--on-wood-mut);font-size:11px;margin:26px 0 0}
 </style>
 </head>
@@ -333,6 +351,19 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
     <h3 class="msg-h">みんなのおたより</h3>
     <div id="msgBoard"></div>
     <p class="msg-empty" id="msgEmpty" style="display:none">まだ公開のおたよりはありません。いちばんのりで送ってみませんか？</p>
+
+    <div id="msgOwnerLoginBox" style="text-align:center;margin:30px 0 0">
+      <button id="msgOwnerToggle" class="msg-ownerlink">お店の方 管理ログイン</button>
+      <div id="msgLoginForm" style="display:none">
+        <div class="msg-loginform">
+          <input type="email" id="msgOwnerEmail" placeholder="メールアドレス" autocomplete="username">
+          <input type="password" id="msgOwnerPw" placeholder="パスワード" autocomplete="current-password">
+          <button class="msg-send" id="msgOwnerLogin" style="margin-top:2px">ログイン</button>
+          <p class="msg-note" id="msgLoginNote"></p>
+        </div>
+      </div>
+    </div>
+    <div id="msgOwnerPanel" style="display:none"></div>
   </section>
 
   <!-- ========== 下タブ ========== -->
@@ -589,9 +620,10 @@ var msgOn=!!(msgCfg.enabled!==false && msgCfg.firebase && msgCfg.firebase.apiKey
 const NAV=[{k:'home',t:'ホーム',ic:'home'},{k:'event',t:'お知らせ',ic:'event'},{k:'menu',t:'メニュー',ic:'menu'},{k:'cal',t:'営業時間',ic:'cal'},{k:'shop',t:'ショップ',ic:'shop'},{k:'point',t:'ポイント',ic:'point'}];
 if(msgOn)NAV.push({k:'msg',t:'おたより',ic:'msg'});
 NAV.push({k:'access',t:'アクセス',ic:'access'});
-$('nav').innerHTML=NAV.map(n=>'<button data-k="'+n.k+'"><span class="ico">'+svg(n.ic)+'</span>'+n.t+'</button>').join('');
+$('nav').innerHTML=NAV.map(n=>'<button data-k="'+n.k+'"><span class="ico">'+svg(n.ic)+'</span>'+(n.k==='msg'?'<span class="nav-badge" id="msgBadge" style="display:none"></span>':'')+n.t+'</button>').join('');
 function go(k){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$('v-'+k).classList.add('active');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.getAttribute('data-k')===k));
+  if(k==='msg'&&window.__reloadMine)try{window.__reloadMine();}catch(e){}
   window.scrollTo(0,0);}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.getAttribute('data-k')));
 document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>go(t.getAttribute('data-go')));
@@ -621,7 +653,9 @@ function fbReady(cfg,cb){
     if(!o1||!window.firebase){done(null);return;}
     loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js',function(o2){
       if(!o2){done(null);return;}
-      try{if(!firebase.apps.length)firebase.initializeApp(cfg);done(firebase.firestore());}catch(e){done(null);}
+      loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',function(){
+        try{if(!firebase.apps.length)firebase.initializeApp(cfg);done(firebase.firestore());}catch(e){done(null);}
+      });
     });
   });
 }
@@ -633,6 +667,7 @@ function initMessages(mcfg){
   });
 }
 function wireMessages(db){
+  if(window.__msgWired)return; window.__msgWired=true;
   var coll=db.collection('messages');
   function note(m){var n=$('msgSendNote');n.textContent=m;n.classList.add('show');}
   function tsN(ts){try{return ts&&ts.toDate?ts.toDate().getTime():0;}catch(e){return 0;}}
@@ -643,15 +678,14 @@ function wireMessages(db){
     var reply=m.reply?'<div class="msg-reply"><div class="rl">'+svg('msg')+'お店より</div><div class="rt">'+esc(m.reply)+'</div></div>':(mine?'<div class="msg-pending">お店からの返信をお待ちください。</div>':'');
     return '<div class="msg-card"><div class="msg-q"><div class="msg-ava">'+avaCh(m.name)+'</div><div class="msg-qb"><div class="msg-name">'+esc(m.name||'ゲスト')+(mine?badge:'')+'</div><div class="msg-text">'+esc(m.text)+'</div><div class="msg-date">'+fmtTs(m.createdAt)+'</div></div></div>'+reply+'</div>';
   }
-  function loadBoard(){
-    coll.where('shown','==',true).get().then(function(qs){
-      var arr=[];qs.forEach(function(d){arr.push(d.data());});
-      arr.sort(function(a,b){return tsN(b.createdAt)-tsN(a.createdAt);});
-      if(!arr.length){$('msgEmpty').style.display='';$('msgBoard').innerHTML='';return;}
-      $('msgEmpty').style.display='none';
-      $('msgBoard').innerHTML=arr.slice(0,60).map(function(m){return cardHTML(m,false);}).join('');
-    }).catch(function(){$('msgEmpty').style.display='';});
-  }
+  /* 公開ボード：リアルタイム更新 */
+  coll.where('shown','==',true).onSnapshot(function(qs){
+    var arr=[];qs.forEach(function(d){arr.push(d.data());});
+    arr.sort(function(a,b){return tsN(b.createdAt)-tsN(a.createdAt);});
+    if(!arr.length){$('msgEmpty').style.display='';$('msgBoard').innerHTML='';}
+    else{$('msgEmpty').style.display='none';$('msgBoard').innerHTML=arr.slice(0,60).map(function(m){return cardHTML(m,false);}).join('');}
+    loadMine();
+  },function(){$('msgEmpty').style.display='';});
   function loadMine(){
     var ids=mineIds(),wrap=$('msgMineWrap');
     if(!ids.length){wrap.innerHTML='';return;}
@@ -662,6 +696,7 @@ function wireMessages(db){
         wrap.innerHTML='<h3 class="msg-mineh">あなたのメッセージ（この端末）</h3>'+list.map(function(m){return cardHTML(m,true);}).join('');
       });
   }
+  window.__reloadMine=loadMine;
   $('msgSend').onclick=function(){
     var text=($('msgText').value||'').trim();
     if(!text){note('メッセージを入力してください。');return;}
@@ -671,11 +706,73 @@ function wireMessages(db){
     coll.add({name:name,text:text,isPublic:isPublic,shown:false,reply:'',createdAt:firebase.firestore.FieldValue.serverTimestamp()})
       .then(function(ref){rememberMine(ref.id);$('msgText').value='';
         note(isPublic?'送信しました。お店が確認してお返事します。公開の場合、返信されると下の「みんなのおたより」に掲載されます。':'送信しました。お店だけに届きます。お返事は下の「あなたのメッセージ」で確認できます。');
-        loadMine();loadBoard();})
+        loadMine();})
       .catch(function(){note('送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。');})
       .then(function(){$('msgSend').disabled=false;});
   };
-  loadBoard();loadMine();
+  loadMine();
+
+  /* ===== お店の管理モード ===== */
+  $('msgOwnerToggle').onclick=function(){var f=$('msgLoginForm');f.style.display=(f.style.display==='none'||!f.style.display)?'':'none';};
+  $('msgOwnerLogin').onclick=function(){
+    var em=($('msgOwnerEmail').value||'').trim(),pw=$('msgOwnerPw').value,n=$('msgLoginNote');
+    if(!em||!pw){n.textContent='メールとパスワードを入力してください。';n.classList.add('show');return;}
+    $('msgOwnerLogin').disabled=true;
+    firebase.auth().signInWithEmailAndPassword(em,pw).then(function(){$('msgOwnerPw').value='';n.classList.remove('show');})
+      .catch(function(e){n.textContent='ログインできませんでした（'+(e.code||'')+'）。メール・パスワードをご確認ください。';n.classList.add('show');})
+      .then(function(){$('msgOwnerLogin').disabled=false;});
+  };
+  var ownerUnsub=null,ownerCache=[];
+  function setBadge(nn){var b=$('msgBadge');if(b){b.textContent=nn;b.style.display=nn?'':'none';}}
+  function renderOwner(){
+    var panel=$('msgOwnerPanel');
+    var arr=ownerCache.slice().sort(function(a,b){return tsN(b.createdAt)-tsN(a.createdAt);});
+    setBadge(arr.filter(function(m){return !m.reply;}).length);
+    var ae=document.activeElement;
+    if(ae&&panel.contains(ae)&&ae.tagName==='TEXTAREA')return; /* 入力中は再描画しない */
+    var head='<div class="msg-ownerbar">🔒 管理モードでログイン中（このメニューは他の人には表示されません）'+
+      '<div class="ob-row"><a class="msg-edit-btn" href="editor.html">アプリの内容を編集（メニュー・営業日など）</a><button class="msg-logout" id="msgOwnerLogout">ログアウト</button></div></div>'+
+      '<h3 class="msg-ownerh">届いたメッセージ</h3>';
+    if(!arr.length){panel.innerHTML=head+'<p class="msg-empty">まだメッセージはありません。</p>';bindOwner();return;}
+    panel.innerHTML=head+arr.map(function(m){
+      var pb=m.isPublic?'<span class="msg-badge pub">公開希望</span>':'<span class="msg-badge pri">非公開</span>';
+      var nw=!m.reply?'<span class="msg-badge new">未返信</span>':'';
+      var chk='<label class="msg-ownerchk"><input type="checkbox" class="ock" data-id="'+m.__id+'"'+(m.shown?' checked':'')+(m.isPublic?'':' disabled')+'>公開ボードに掲載する'+(m.isPublic?'':'（お客様が非公開を選択）')+'</label>';
+      return '<div class="msg-card owner"><div class="msg-q"><div class="msg-ava">'+avaCh(m.name)+'</div><div class="msg-qb"><div class="msg-name">'+esc(m.name||'ゲスト')+pb+nw+'</div><div class="msg-text">'+esc(m.text)+'</div><div class="msg-date">'+fmtTs(m.createdAt)+'</div></div></div>'+
+        '<textarea class="orep" data-id="'+m.__id+'" placeholder="返信を入力">'+esc(m.reply||'')+'</textarea>'+chk+
+        '<div class="msg-ownerbtns"><button class="msg-osave" data-id="'+m.__id+'">返信を送る</button><button class="msg-odel" data-id="'+m.__id+'">削除</button></div></div>';
+    }).join('');
+    bindOwner();
+  }
+  function bindOwner(){
+    var panel=$('msgOwnerPanel');
+    var lo=$('msgOwnerLogout');if(lo)lo.onclick=function(){firebase.auth().signOut();};
+    panel.querySelectorAll('.msg-osave').forEach(function(b){b.onclick=function(){
+      var id=b.getAttribute('data-id');
+      var rep=(panel.querySelector('.orep[data-id="'+id+'"]').value||'').trim();
+      var ck=panel.querySelector('.ock[data-id="'+id+'"]');
+      var shown=!!(ck&&ck.checked&&!ck.disabled);
+      b.disabled=true;b.textContent='送信中…';
+      coll.doc(id).update({reply:rep,shown:shown,repliedAt:firebase.firestore.FieldValue.serverTimestamp()})
+        .catch(function(e){alert('保存に失敗しました（'+(e.code||'')+'）');})
+        .then(function(){b.disabled=false;b.textContent='返信を送る';});
+    };});
+    panel.querySelectorAll('.msg-odel').forEach(function(b){b.onclick=function(){
+      var id=b.getAttribute('data-id');
+      if(!confirm('このメッセージを削除しますか？（元に戻せません）'))return;
+      coll.doc(id).delete().catch(function(e){alert('削除に失敗しました（'+(e.code||'')+'）');});
+    };});
+  }
+  firebase.auth().onAuthStateChanged(function(u){
+    if(u){
+      $('msgOwnerLoginBox').style.display='none';$('msgOwnerPanel').style.display='';
+      if(!ownerUnsub){ownerUnsub=coll.onSnapshot(function(qs){ownerCache=[];qs.forEach(function(d){ownerCache.push(Object.assign({__id:d.id},d.data()));});renderOwner();},
+        function(e){$('msgOwnerPanel').innerHTML='<p class="msg-empty">読み込みに失敗しました（'+esc(e.code||'')+'）。少し待って再読み込みしてください。</p>';});}
+    }else{
+      $('msgOwnerLoginBox').style.display='';$('msgOwnerPanel').style.display='none';$('msgOwnerPanel').innerHTML='';
+      setBadge(0);if(ownerUnsub){ownerUnsub();ownerUnsub=null;}
+    }
+  });
 }
 if(msgOn){try{initMessages(msgCfg);}catch(e){}}
 
