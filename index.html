@@ -233,6 +233,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .msg-osave:disabled{opacity:.5}
 .msg-odel{background:#fdecea;color:#c0392b;border:none;border-radius:10px;padding:10px 14px;font-weight:700;font-family:inherit;font-size:13px;cursor:pointer;margin-left:auto}
 .msg-ownerh{font-family:"Zen Maru Gothic";font-size:14px;color:var(--on-wood);font-weight:700;margin:0 4px 12px}
+#msgSecHead{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;cursor:default}
 
 /* ===== 下タブ ===== */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(250,246,238,.72);
@@ -335,7 +336,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 
   <!-- ========== おたより ========== -->
   <section class="view" id="v-msg">
-    <h2 class="sec">おたより</h2><p class="sec-en">Message</p><div class="wgd"></div>
+    <h2 class="sec" id="msgSecHead">おたより</h2><p class="sec-en">Message</p><div class="wgd"></div>
     <p class="msg-intro" id="msgIntro"></p>
     <div class="msg-form">
       <input type="text" id="msgName" placeholder="お名前（任意・ニックネームでOK）" maxlength="24">
@@ -352,7 +353,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
     <div id="msgBoard"></div>
     <p class="msg-empty" id="msgEmpty" style="display:none">まだ公開のおたよりはありません。いちばんのりで送ってみませんか？</p>
 
-    <div id="msgOwnerLoginBox" style="text-align:center;margin:30px 0 0">
+    <div id="msgOwnerLoginBox" style="text-align:center;margin:30px 0 0;display:none">
       <button id="msgOwnerToggle" class="msg-ownerlink">お店の方 管理ログイン</button>
       <div id="msgLoginForm" style="display:none">
         <div class="msg-loginform">
@@ -712,7 +713,19 @@ function wireMessages(db){
   };
   loadMine();
 
-  /* ===== お店の管理モード ===== */
+  /* ===== お店の管理モード（入口は一般の人に非表示） ===== */
+  var revealed=false;
+  function reveal(){
+    revealed=true;
+    try{if(firebase.auth().currentUser)return;}catch(e){}
+    $('msgOwnerLoginBox').style.display='';$('msgLoginForm').style.display='';
+    if(typeof go==='function')go('msg');
+    var em=$('msgOwnerEmail');if(em)setTimeout(function(){em.focus();},100);
+  }
+  window.__wanonOwnerReveal=reveal;
+  /* 入口は「秘密のタップ」だけ：「おたより」の見出しを5回すばやくタップ */
+  var taps=[];var head=$('msgSecHead');
+  if(head)head.addEventListener('click',function(){var t=Date.now();taps.push(t);taps=taps.filter(function(x){return t-x<3000;});if(taps.length>=5){taps=[];reveal();}});
   $('msgOwnerToggle').onclick=function(){var f=$('msgLoginForm');f.style.display=(f.style.display==='none'||!f.style.display)?'':'none';};
   $('msgOwnerLogin').onclick=function(){
     var em=($('msgOwnerEmail').value||'').trim(),pw=$('msgOwnerPw').value,n=$('msgLoginNote');
@@ -769,7 +782,7 @@ function wireMessages(db){
       if(!ownerUnsub){ownerUnsub=coll.onSnapshot(function(qs){ownerCache=[];qs.forEach(function(d){ownerCache.push(Object.assign({__id:d.id},d.data()));});renderOwner();},
         function(e){$('msgOwnerPanel').innerHTML='<p class="msg-empty">読み込みに失敗しました（'+esc(e.code||'')+'）。少し待って再読み込みしてください。</p>';});}
     }else{
-      $('msgOwnerLoginBox').style.display='';$('msgOwnerPanel').style.display='none';$('msgOwnerPanel').innerHTML='';
+      $('msgOwnerLoginBox').style.display=revealed?'':'none';$('msgOwnerPanel').style.display='none';$('msgOwnerPanel').innerHTML='';
       setBadge(0);if(ownerUnsub){ownerUnsub();ownerUnsub=null;}
     }
   });
