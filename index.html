@@ -508,7 +508,7 @@ function renderCal(){
   }
   $('calGrid').innerHTML=html;
 }
-$('calNote').textContent=CONFIG.calendar.note||'';
+$('calNote').textContent=CONFIG.calendar.note||'';$('calNote').style.display=CONFIG.calendar.note?'':'none';
 $('calPrev').onclick=()=>{calDate.setMonth(calDate.getMonth()-1);renderCal();};
 $('calNext').onclick=()=>{calDate.setMonth(calDate.getMonth()+1);renderCal();};
 renderCal();
