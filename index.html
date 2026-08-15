@@ -119,6 +119,33 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .mitem .mi-n{font-weight:700;font-size:14.5px}
 .mitem .mi-d{font-size:12px;color:var(--muted);margin-top:2px}
 .mitem .mi-p{font-weight:700;color:var(--brand-d);white-space:nowrap;font-size:14px;margin-top:6px}
+.mitem .mi-p .mi-tax{font-size:10.5px;color:var(--muted);font-weight:600;margin-left:3px}
+.mitem .mi-al{font-size:11px;color:#a8734a;margin-top:5px;line-height:1.5}
+.mitem{cursor:pointer}
+/* メニュータブ */
+.menu-tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 4px;margin:0 -2px 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.menu-tabs::-webkit-scrollbar{display:none}
+.menu-tabs .mtab{flex:none;background:rgba(250,246,238,.85);border:1px solid var(--line);color:var(--brand-d);border-radius:999px;padding:8px 15px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap}
+.menu-tabs .mtab.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.menu-taxnote{font-size:11.5px;color:var(--on-wood-mut);margin:2px 4px 10px}
+/* メニュー拡大モーダル */
+.mmodal{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.mmodal-bg{position:absolute;inset:0;background:rgba(30,20,10,.62);backdrop-filter:blur(2px)}
+.mmodal-card{position:relative;z-index:1;background:var(--card);border-radius:20px;max-width:440px;width:100%;max-height:86vh;overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.4);animation:mmpop .2s ease}
+@keyframes mmpop{from{transform:scale(.94);opacity:.4}to{transform:scale(1);opacity:1}}
+.mmodal-close{position:absolute;top:10px;right:10px;z-index:2;width:36px;height:36px;border-radius:50%;border:none;background:rgba(0,0,0,.45);color:#fff;font-size:22px;line-height:1;cursor:pointer}
+.mm-img{width:100%;height:auto;max-height:56vh;object-fit:cover;display:block;background:#efe8da}
+.mm-body{padding:18px 20px 22px}
+.mm-name{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;color:var(--ink)}
+.mm-desc{font-size:13.5px;color:var(--ink);opacity:.9;line-height:1.85;margin-top:8px;white-space:pre-wrap}
+.mm-price{font-size:19px;font-weight:800;color:var(--brand-d);margin-top:12px}
+.mm-price .mm-tax{font-size:12px;color:var(--muted);font-weight:600;margin-left:4px}
+.mm-al{font-size:12.5px;color:#a8734a;background:#faf2ea;border-radius:10px;padding:9px 12px;margin-top:12px;line-height:1.6}
+.mm-al b{color:#8a5a30}
+/* 上に戻る */
+.to-top{position:fixed;right:16px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:60;width:44px;height:44px;border-radius:50%;border:none;background:var(--brand-d);color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.35);cursor:pointer;display:none;align-items:center;justify-content:center;opacity:.92}
+.to-top svg{width:22px;height:22px}
+.to-top.show{display:flex}
 .badge-veg{display:inline-block;font-size:10px;background:#eef3e5;color:#5f7038;border-radius:6px;padding:1px 6px;margin-left:6px}
 
 /* ===== カレンダー ===== */
@@ -134,6 +161,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .cell.open{background:#fbf7ef}
 .cell.closed{background:#f6e7e4;color:#b5675d}
 .cell.special{background:#fdf3d8;color:#a5771a}
+.cell.lunch{background:#e3efe0;color:#4f7a44}
 .cell.today{outline:2px solid var(--brand)}
 .cell .mk{font-size:9px;margin-top:1px}
 .legend{display:flex;gap:14px;justify-content:center;margin:12px 0 0;font-size:11px;color:var(--muted);flex-wrap:wrap}
@@ -284,6 +312,8 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
   <!-- ========== メニュー ========== -->
   <section class="view" id="v-menu">
     <h2 class="sec">メニュー</h2><p class="sec-en">Menu</p><div class="wgd"></div>
+    <div class="menu-tabs" id="menuTabs"></div>
+    <p class="menu-taxnote" id="menuTaxNote" style="display:none">※表示価格はすべて税込です</p>
     <div id="menuList"></div>
   </section>
 
@@ -300,6 +330,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
       <div class="cal-grid" id="calGrid"></div>
       <div class="legend">
         <span><i style="background:#fbf7ef;border:1px solid var(--line)"></i>営業</span>
+        <span><i style="background:#e3efe0"></i>ランチのみ</span>
         <span><i style="background:#f6e7e4"></i>定休</span>
         <span><i style="background:#fdf3d8"></i>特別</span>
       </div>
@@ -376,6 +407,18 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
   <nav class="nav" id="nav"></nav>
 </div>
 
+<!-- 上に戻る -->
+<button class="to-top" id="toTop" aria-label="上に戻る"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+
+<!-- メニュー拡大モーダル -->
+<div class="mmodal" id="menuModal" style="display:none">
+  <div class="mmodal-bg" id="menuModalBg"></div>
+  <div class="mmodal-card">
+    <button class="mmodal-close" id="menuModalClose" aria-label="閉じる">×</button>
+    <div id="menuModalBody"></div>
+  </div>
+</div>
+
 <script>
 /* ================================================================
    ★ここだけ書き換えればお店の内容が変わります（設定ブロック）★
@@ -405,6 +448,7 @@ const DEFAULT_CONFIG = {
     closedWeekdays: [1],           // 定休の曜日（0=日,1=月,...6=土）。[1]=毎週月曜
     specialClosed: [],             // 臨時休業日（YYYY-MM-DD）を追記
     specialOpen: [],               // 臨時営業日（定休だけど営業）
+    lunchOnly: [],                 // ランチのみ営業の日（YYYY-MM-DD）
     note: "定休：月曜（ほか月1回不定休あり）。土日はランチ11:30〜。最新はInstagramをご確認ください。"
   },
 
@@ -432,6 +476,7 @@ const DEFAULT_CONFIG = {
   ],
   orderVia: { type:"line", url:"https://www.instagram.com/wanon.toyota/" }, // type:"line"|"mail"。mailの時 url にメールアドレス
   minneUrl: "", // minneショップ/商品ページのURL。入れると「minneで購入」ボタンが表示されます
+  menuTax: false, // trueにするとメニュー価格に「税込」表示＋注記が出ます
   shopNote: "オーナーの作品を掲載予定です。気になる作品は「注文・お問い合わせ」からメッセージください。お支払い・お渡し方法は個別にご案内します。",
 
   // ポイントカード（試作）
@@ -507,23 +552,50 @@ $('tiles').innerHTML=TILES.map(x=>'<div class="tile" data-go="'+x.go+'"><div cla
 
 /* ---- 営業状態（今日） ---- */
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function isLunchOnly(d){const c=CONFIG.calendar;return c.lunchOnly&&c.lunchOnly.indexOf(ymd(d))>=0;}
 function isClosed(d){const c=CONFIG.calendar;const s=ymd(d);
-  if(c.specialOpen&&c.specialOpen.indexOf(s)>=0)return false;
   if(c.specialClosed&&c.specialClosed.indexOf(s)>=0)return true;
+  if(c.lunchOnly&&c.lunchOnly.indexOf(s)>=0)return false;
+  if(c.specialOpen&&c.specialOpen.indexOf(s)>=0)return false;
   return c.closedWeekdays&&c.closedWeekdays.indexOf(d.getDay())>=0;}
-(function(){const now=new Date();const closed=isClosed(now);const box=$('statusBox');
+(function(){const now=new Date();const closed=isClosed(now);const lunch=isLunchOnly(now);const box=$('statusBox');
   box.className='status '+(closed?'closed':'open');
-  $('stMain').textContent=closed?'本日は定休日です':'本日は営業日です';
-  $('stSub').textContent=CONFIG.hours+(closed?'':' 営業中');
+  $('stMain').textContent=closed?'本日は定休日です':(lunch?'本日はランチのみ営業です':'本日は営業日です');
+  $('stSub').textContent=CONFIG.hours+(closed?'':(lunch?' ／ 本日はランチのみ':' 営業中'));
 })();
 
-/* ---- メニュー ---- */
-$('menuList').innerHTML=CONFIG.menu.map(cat=>{
-  return '<div class="mcat">'+esc(cat.cat)+'</div>'+cat.items.map(it=>{
-    const img=it.img?'<img src="'+esc(it.img)+'" alt="">':'';
-    return '<div class="mitem">'+img+'<div class="mi-b"><div class="mi-n">'+esc(it.name)+'</div>'+(it.desc?'<div class="mi-d">'+esc(it.desc)+'</div>':'')+'<div class="mi-p">'+esc(it.price)+'</div></div></div>';
+/* ---- メニュー（タブ切替・税込・アレルギー・拡大モーダル） ---- */
+var MENU=(CONFIG.menu||[]);var MTAX=!!CONFIG.menuTax;var curMTab=0;
+if(curMTab>=MENU.length)curMTab=0;
+function priceHTML(pr,cls){pr=(pr||'').trim();if(!pr)return '';return esc(pr)+(MTAX?' <span class="'+cls+'">税込</span>':'');}
+function renderMenuTabs(){
+  $('menuTabs').innerHTML=MENU.map(function(c,i){return '<button class="mtab'+(i===curMTab?' on':'')+'" data-mt="'+i+'">'+esc(c.cat)+'</button>';}).join('');
+  $('menuTabs').querySelectorAll('.mtab').forEach(function(b){b.onclick=function(){curMTab=+b.getAttribute('data-mt');renderMenuTabs();renderMenuItems();var mt=$('menuTabs');};});
+  $('menuTabs').style.display=MENU.length>1?'':'none';
+}
+function renderMenuItems(){
+  $('menuTaxNote').style.display=MTAX?'':'none';
+  var cat=MENU[curMTab]||{items:[]};
+  $('menuList').innerHTML=(cat.items||[]).map(function(it,ii){
+    var img=it.img?'<img src="'+esc(it.img)+'" alt="">':'';
+    var al=it.allergy?'<div class="mi-al">アレルギー: '+esc(it.allergy)+'</div>':'';
+    var pr=priceHTML(it.price,'mi-tax');
+    return '<div class="mitem" data-mi="'+ii+'">'+img+'<div class="mi-b"><div class="mi-n">'+esc(it.name)+'</div>'+(it.desc?'<div class="mi-d">'+esc(it.desc)+'</div>':'')+(pr?'<div class="mi-p">'+pr+'</div>':'')+al+'</div></div>';
   }).join('');
-}).join('');
+  $('menuList').querySelectorAll('.mitem').forEach(function(el){el.onclick=function(){openMenuModal(curMTab,+el.getAttribute('data-mi'));};});
+}
+function openMenuModal(ci,ii){
+  var it=((MENU[ci]||{}).items||[])[ii];if(!it)return;
+  var img=it.img?'<img class="mm-img" src="'+esc(it.img)+'" alt="">':'';
+  var pr=it.price?'<div class="mm-price">'+priceHTML(it.price,'mm-tax')+'</div>':'';
+  var al=it.allergy?'<div class="mm-al"><b>アレルギー</b>：'+esc(it.allergy)+'</div>':'';
+  var desc=it.desc?'<div class="mm-desc">'+esc(it.desc)+'</div>':'';
+  $('menuModalBody').innerHTML=img+'<div class="mm-body"><div class="mm-name">'+esc(it.name)+'</div>'+desc+pr+al+'</div>';
+  $('menuModal').style.display='';
+}
+function closeMenuModal(){$('menuModal').style.display='none';}
+$('menuModalBg').onclick=closeMenuModal;$('menuModalClose').onclick=closeMenuModal;
+renderMenuTabs();renderMenuItems();
 
 /* ---- カレンダー ---- */
 let calDate=new Date(); calDate.setDate(1);
@@ -540,8 +612,9 @@ function renderCal(){
     const dt=new Date(y,m,d);const s=ymd(dt);
     const c=CONFIG.calendar;
     let cls='open',mk='';
-    if(c.specialOpen&&c.specialOpen.indexOf(s)>=0){cls='special';mk='営業';}
-    else if(c.specialClosed&&c.specialClosed.indexOf(s)>=0){cls='special';mk='臨休';}
+    if(c.specialClosed&&c.specialClosed.indexOf(s)>=0){cls='closed';mk='臨休';}
+    else if(c.lunchOnly&&c.lunchOnly.indexOf(s)>=0){cls='lunch';mk='昼のみ';}
+    else if(c.specialOpen&&c.specialOpen.indexOf(s)>=0){cls='special';mk='営業';}
     else if(c.closedWeekdays&&c.closedWeekdays.indexOf(dt.getDay())>=0){cls='closed';mk='休';}
     html+='<div class="cell '+cls+(s===today?' today':'')+'"><span>'+d+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+'</div>';
   }
@@ -784,6 +857,11 @@ function wireMessages(db){
   });
 }
 if(msgOn){try{initMessages(msgCfg);}catch(e){}}
+
+/* ---- 上に戻る ---- */
+if(!window.__toTopInit){window.__toTopInit=true;var tt=$('toTop');
+  if(tt){tt.onclick=function(){window.scrollTo({top:0,behavior:'smooth'});};
+    window.addEventListener('scroll',function(){if(window.scrollY>360)tt.classList.add('show');else tt.classList.remove('show');},{passive:true});}}
 
 go('home');
 }

@@ -90,12 +90,17 @@ a{color:var(--ac)}
       <label>臨時営業日（定休だけど営業）</label>
       <div class="row"><input type="date" id="so_date"><button class="chip" id="so_add" type="button">＋営業日</button></div>
       <div id="soList" style="margin-top:8px"></div>
+      <label>ランチのみ営業の日</label>
+      <div class="row"><input type="date" id="lo_date"><button class="chip" id="lo_add" type="button">＋ランチのみ</button></div>
+      <div id="loList" style="margin-top:8px"></div>
       <label>カレンダーの注記</label><textarea id="f_cal_note" style="min-height:60px"></textarea>
     </div>
 
     <div class="sec"><h2>メニュー</h2>
+      <label class="toggle" style="margin:0 0 6px"><input type="checkbox" id="f_menutax">価格に「税込」表示を付ける</label>
+      <p class="hint" style="margin:0 0 12px">カテゴリ名がそのままメニューのタブになります（例：ランチ＆ディナー／ディナー／BAR／ドリンク／テイクアウト）。各品目にアレルギーも入力でき、アプリでは品目をタップすると写真つきで大きく表示されます。</p>
       <div id="menuList"></div>
-      <button class="add" id="addCat" type="button">＋ カテゴリを追加</button>
+      <button class="add" id="addCat" type="button">＋ カテゴリ（タブ）を追加</button>
     </div>
 
     <div class="sec"><h2>お知らせ・イベント</h2>
@@ -203,6 +208,7 @@ var DEFAULT_CONFIG = {
     "closedWeekdays": [1],
     "specialClosed": [],
     "specialOpen": [],
+    "lunchOnly": [],
     "note": "定休：月曜（ほか月1回不定休あり）。最新はInstagramをご確認ください。"
   },
   "menu": [
@@ -227,6 +233,7 @@ var DEFAULT_CONFIG = {
   ],
   "orderVia": { "type": "line", "url": "https://www.instagram.com/wanon.toyota/" },
   "minneUrl": "",
+  "menuTax": false,
   "shopNote": "オーナーの作品を掲載予定です。気になる作品は「注文・お問い合わせ」からメッセージください。お支払い・お渡し方法は個別にご案内します。",
   "point": { "title": "スタンプカード", "sub": "10個たまると特典！", "total": 10, "pin": "1234", "reward": "🎁 コンプリートで特典プレゼント", "lineUrl": "" },
   "address": "愛知県豊田市松平志賀町丸山5-4",
@@ -265,8 +272,8 @@ function initBasic(){
   $('pt_total').value=state.point.total||10; $('pt_pin').value=state.point.pin||''; $('pt_reward').value=state.point.reward||''; $('pt_line').value=state.point.lineUrl||'';
   $('ac_addr').value=state.address||''; $('ac_map').value=state.mapQuery||''; $('ac_tel').value=state.tel||'';
   state.orderVia=state.orderVia||{type:'line',url:''}; $('ov_type').value=state.orderVia.type||'line'; $('ov_url').value=state.orderVia.url||'';
-  $('f_shopnote').value=state.shopNote||''; $('f_minne').value=state.minneUrl||'';
-  state.calendar=state.calendar||{closedWeekdays:[],specialClosed:[],specialOpen:[],note:''}; $('f_cal_note').value=state.calendar.note||'';
+  $('f_shopnote').value=state.shopNote||''; $('f_minne').value=state.minneUrl||''; $('f_menutax').checked=!!state.menuTax;
+  state.calendar=state.calendar||{closedWeekdays:[],specialClosed:[],specialOpen:[],lunchOnly:[],note:''}; state.calendar.lunchOnly=state.calendar.lunchOnly||[]; $('f_cal_note').value=state.calendar.note||'';
   updateLogoPrev();
 }
 bindV('f_name',function(v){state.shopName=v;});
@@ -296,6 +303,7 @@ $('ov_type').addEventListener('change',function(){state.orderVia.type=$('ov_type
 bindV('ov_url',function(v){state.orderVia.url=v;});
 bindV('f_shopnote',function(v){state.shopNote=v;});
 bindV('f_minne',function(v){state.minneUrl=v.trim();});
+$('f_menutax').addEventListener('change',function(){state.menuTax=$('f_menutax').checked;pushPreview();});
 bindV('f_cal_note',function(v){state.calendar.note=v;});
 
 /* ---------- ロゴ ---------- */
@@ -318,6 +326,7 @@ function renderDates(key,listId){var wrap=$(listId);var arr=state.calendar[key]|
   wrap.querySelectorAll('b[data-k]').forEach(function(b){b.onclick=function(){state.calendar[b.getAttribute('data-k')].splice(+b.getAttribute('data-i'),1);renderDates(key,listId);pushPreview();};});}
 $('sc_add').onclick=function(){var d=$('sc_date').value;if(!d)return;state.calendar.specialClosed=state.calendar.specialClosed||[];state.calendar.specialClosed.push(d);renderDates('specialClosed','scList');pushPreview();};
 $('so_add').onclick=function(){var d=$('so_date').value;if(!d)return;state.calendar.specialOpen=state.calendar.specialOpen||[];state.calendar.specialOpen.push(d);renderDates('specialOpen','soList');pushPreview();};
+$('lo_add').onclick=function(){var d=$('lo_date').value;if(!d)return;state.calendar.lunchOnly=state.calendar.lunchOnly||[];state.calendar.lunchOnly.push(d);renderDates('lunchOnly','loList');pushPreview();};
 
 /* ---------- メニュー ---------- */
 /* 画像ヘルパー */
@@ -331,18 +340,19 @@ function renderMenu(){var box=$('menuList');box.innerHTML='';(state.menu||[]).fo
     '<div style="display:flex;gap:10px;margin-bottom:6px"><img class="thumb"'+(it.img?' src="'+esc(it.img)+'"':' style="display:none"')+' data-mci="'+ci+'" data-mii="'+ii+'"><div style="flex:1"><input type="file" accept="image/*" class="mfile" data-mci="'+ci+'" data-mii="'+ii+'"><div class="foot-actions"><button class="chip mclear" data-mci="'+ci+'" data-mii="'+ii+'" type="button">写真を消す</button></div></div></div>'+
     '<input type="text" placeholder="品名" data-ci="'+ci+'" data-ii="'+ii+'" data-k="name" value="'+esc(it.name)+'">'+
     '<input type="text" placeholder="説明（任意）" data-ci="'+ci+'" data-ii="'+ii+'" data-k="desc" value="'+esc(it.desc||'')+'" style="margin-top:5px">'+
-    '<input type="text" placeholder="価格 例:¥1,280" data-ci="'+ci+'" data-ii="'+ii+'" data-k="price" value="'+esc(it.price||'')+'" style="margin-top:5px"></div>';}).join('');
+    '<input type="text" placeholder="価格 例:¥1,280" data-ci="'+ci+'" data-ii="'+ii+'" data-k="price" value="'+esc(it.price||'')+'" style="margin-top:5px">'+
+    '<input type="text" placeholder="アレルギー 例:小麦・卵・乳（任意）" data-ci="'+ci+'" data-ii="'+ii+'" data-k="allergy" value="'+esc(it.allergy||'')+'" style="margin-top:5px"></div>';}).join('');
   d.innerHTML='<div class="top"><input type="text" class="t" style="font-size:14px" placeholder="カテゴリ名（例:ランチ）" data-cat="'+ci+'" value="'+esc(cat.cat)+'"><button class="chip del" data-delcat="'+ci+'" type="button">カテゴリ削除</button></div>'+itemsHtml+'<button class="chip" data-additem="'+ci+'" type="button" style="margin-top:6px">＋品目</button>';
   box.appendChild(d);});
   // bind
   box.querySelectorAll('input[data-cat]').forEach(function(el){el.addEventListener('input',function(){state.menu[+el.getAttribute('data-cat')].cat=el.value;pushPreview();});});
   box.querySelectorAll('[data-delcat]').forEach(function(b){b.onclick=function(){state.menu.splice(+b.getAttribute('data-delcat'),1);renderMenu();pushPreview();};});
-  box.querySelectorAll('[data-additem]').forEach(function(b){b.onclick=function(){var ci=+b.getAttribute('data-additem');state.menu[ci].items.push({name:'',desc:'',price:'',img:''});renderMenu();pushPreview();};});
+  box.querySelectorAll('[data-additem]').forEach(function(b){b.onclick=function(){var ci=+b.getAttribute('data-additem');state.menu[ci].items.push({name:'',desc:'',price:'',allergy:'',img:''});renderMenu();pushPreview();};});
   box.querySelectorAll('[data-di]').forEach(function(b){b.onclick=function(){state.menu[+b.getAttribute('data-di')].items.splice(+b.getAttribute('data-dj'),1);renderMenu();pushPreview();};});
   box.querySelectorAll('input[data-ci][data-ii]').forEach(function(el){var ev=el.type==='checkbox'?'change':'input';el.addEventListener(ev,function(){var it=state.menu[+el.getAttribute('data-ci')].items[+el.getAttribute('data-ii')];var k=el.getAttribute('data-k');it[k]=el.type==='checkbox'?el.checked:el.value;pushPreview();});});
   box.querySelectorAll('.mfile').forEach(function(el){el.addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var ci=+el.getAttribute('data-mci'),ii=+el.getAttribute('data-mii');fileToImg(f,function(im){state.menu[ci].items[ii].img=sqData(im,480);renderMenu();pushPreview();});});});
   box.querySelectorAll('.mclear').forEach(function(b){b.onclick=function(){state.menu[+b.getAttribute('data-mci')].items[+b.getAttribute('data-mii')].img='';renderMenu();pushPreview();};});}
-$('addCat').onclick=function(){state.menu=state.menu||[];state.menu.push({cat:'新カテゴリ',items:[{name:'',desc:'',price:'',img:''}]});renderMenu();pushPreview();};
+$('addCat').onclick=function(){state.menu=state.menu||[];state.menu.push({cat:'新カテゴリ',items:[{name:'',desc:'',price:'',allergy:'',img:''}]});renderMenu();pushPreview();};
 
 /* ---------- イベント ---------- */
 function renderEvents(){var box=$('eventList');box.innerHTML='';(state.events||[]).forEach(function(ev,i){
@@ -434,7 +444,7 @@ $('btnReload').onclick=function(){loadCurrent();};
 $('btnPrev').onclick=pushPreview;
 
 /* ---------- 初期化 ---------- */
-function renderAll(){initBasic();renderWd();renderDates('specialClosed','scList');renderDates('specialOpen','soList');renderMenu();renderEvents();renderWorks();renderSns();
+function renderAll(){initBasic();renderWd();renderDates('specialClosed','scList');renderDates('specialOpen','soList');renderDates('lunchOnly','loList');renderMenu();renderEvents();renderWorks();renderSns();
   var gh=loadGH();$('g_owner').value=gh.owner||'';$('g_repo').value=gh.repo||'';$('g_branch').value=gh.branch||'main';$('g_path').value=gh.path||'config.json';$('g_token').value=gh.token||'';}
 function loadCurrent(){fetch('config.json?t='+Date.now()).then(function(r){return r.ok?r.json():null;}).then(function(c){if(c){state=c;renderAll();pushPreview();setStatus('saveStatus','info','現在の保存内容を読み込みました。');}}).catch(function(){});}
 renderAll();
