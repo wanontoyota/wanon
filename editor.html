@@ -66,6 +66,7 @@ a{color:var(--ac)}
       <label>営業時間（表示用テキスト）</label><input type="text" id="f_hours">
       <label>こだわり・見出し</label><input type="text" id="f_story_title">
       <label>こだわり・本文（改行OK）</label><textarea id="f_story_body"></textarea>
+      <p style="font-size:11px;color:var(--muted);margin:4px 2px 0;line-height:1.6">行を【　】で囲むと見出し（緑の小見出し）になります。例：【プラントベース】</p>
       <label>フッター表記</label><input type="text" id="f_footer">
       <label>テーマ色</label><input type="color" id="f_brand" style="height:42px;padding:4px">
     </div>
@@ -173,7 +174,7 @@ var DEFAULT_CONFIG = {
   "theme": { "brand": "#8f7c5b" },
   "story": {
     "title": "和のんのこだわり",
-    "body": "豊田市松平、山あいの静かな場所にある木造ロッジ風の一軒家レストラン＆バー。\n大豆ミートや玄米を使った、からだにやさしい健康的なお料理をご用意しています。ベジタリアンの方やお子さま連れも安心してお過ごしいただけます。\n木のぬくもりに包まれた落ち着いた空間で、ゆっくりとしたひとときをどうぞ。\n（旧店名：豆禅）"
+    "body": "【プラントベース】\n植物由来の食品を積極的に取り入れる食生活を楽しんでいただけることを目的としています。\n【グルテンフリー】\n腸への負担軽減、体調不良の改善、健康目的な食生活を目的としています。\n【地産地消】\n地元・豊田の新鮮な恵みを積極的に取り入れ、からだも心も元気になる食生活を目的としています。"
   },
   "events": [
     { "date": "2026-08-23", "title": "わのん夏の手しごと市", "tag": "イベント", "desc": "オーナーの作品と、地元の作り手さんが集まる一日限りのマルシェ。ワークショップも開催予定です。", "img": "" },
