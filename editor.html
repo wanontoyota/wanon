@@ -111,6 +111,7 @@ a{color:var(--ac)}
         <select id="ov_type"><option value="line">LINE / SNSリンク</option><option value="mail">メール</option></select>
         <input type="text" id="ov_url" placeholder="LINE/SNSのURL または メールアドレス">
       </div>
+      <label>minneショップURL（任意）</label><input type="text" id="f_minne" placeholder="https://minne.com/@... 入れると「minneで購入」ボタンが出ます">
       <label>ショップの説明文</label><textarea id="f_shopnote" style="min-height:60px"></textarea>
     </div>
 
@@ -225,6 +226,7 @@ var DEFAULT_CONFIG = {
     { "name": "（作品名）", "desc": "", "price": "¥—", "stock": "", "img": "", "soldout": false }
   ],
   "orderVia": { "type": "line", "url": "https://www.instagram.com/wanon.toyota/" },
+  "minneUrl": "",
   "shopNote": "オーナーの作品を掲載予定です。気になる作品は「注文・お問い合わせ」からメッセージください。お支払い・お渡し方法は個別にご案内します。",
   "point": { "title": "スタンプカード", "sub": "10個たまると特典！", "total": 10, "pin": "1234", "reward": "🎁 コンプリートで特典プレゼント", "lineUrl": "" },
   "address": "愛知県豊田市松平志賀町丸山5-4",
@@ -263,7 +265,7 @@ function initBasic(){
   $('pt_total').value=state.point.total||10; $('pt_pin').value=state.point.pin||''; $('pt_reward').value=state.point.reward||''; $('pt_line').value=state.point.lineUrl||'';
   $('ac_addr').value=state.address||''; $('ac_map').value=state.mapQuery||''; $('ac_tel').value=state.tel||'';
   state.orderVia=state.orderVia||{type:'line',url:''}; $('ov_type').value=state.orderVia.type||'line'; $('ov_url').value=state.orderVia.url||'';
-  $('f_shopnote').value=state.shopNote||'';
+  $('f_shopnote').value=state.shopNote||''; $('f_minne').value=state.minneUrl||'';
   state.calendar=state.calendar||{closedWeekdays:[],specialClosed:[],specialOpen:[],note:''}; $('f_cal_note').value=state.calendar.note||'';
   updateLogoPrev();
 }
@@ -293,6 +295,7 @@ bindV('ac_tel',function(v){state.tel=v;});
 $('ov_type').addEventListener('change',function(){state.orderVia.type=$('ov_type').value;pushPreview();});
 bindV('ov_url',function(v){state.orderVia.url=v;});
 bindV('f_shopnote',function(v){state.shopNote=v;});
+bindV('f_minne',function(v){state.minneUrl=v.trim();});
 bindV('f_cal_note',function(v){state.calendar.note=v;});
 
 /* ---------- ロゴ ---------- */
@@ -363,6 +366,7 @@ function renderWorks(){var box=$('workList');box.innerHTML='';(state.works||[]).
     '<input type="text" placeholder="作品名" data-i="'+i+'" data-k="name" value="'+esc(w.name)+'" style="margin-top:6px">'+
     '<input type="text" placeholder="説明（任意）" data-i="'+i+'" data-k="desc" value="'+esc(w.desc||'')+'" style="margin-top:5px">'+
     '<div class="row" style="margin-top:5px"><input type="text" placeholder="価格 例:¥2,800" data-i="'+i+'" data-k="price" value="'+esc(w.price||'')+'"><input type="text" placeholder="在庫 例:残り3点" data-i="'+i+'" data-k="stock" value="'+esc(w.stock||'')+'"></div>'+
+    '<input type="text" placeholder="minne商品ページURL（任意）入れると「minneで購入」ボタンに" data-i="'+i+'" data-k="buyUrl" value="'+esc(w.buyUrl||'')+'" style="margin-top:5px">'+
     '<label class="toggle"><input type="checkbox" data-i="'+i+'" data-k="soldout"'+(w.soldout?' checked':'')+'>完売にする</label>';
   box.appendChild(d);});
   bindList('workList','works',renderWorks);

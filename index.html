@@ -140,6 +140,13 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
 
 /* ===== 作品ショップ ===== */
+.minne-btn{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-left:5px solid #e95464;border-radius:14px;padding:14px 16px;margin:6px 0 14px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow)}
+.minne-btn:active{transform:scale(.99)}
+.minne-btn .mb-ic{font-size:22px;flex:none}
+.minne-btn .mb-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.minne-btn .mb-tx b{font-size:15px;font-family:"Zen Maru Gothic";color:#d84a5c}
+.minne-btn .mb-tx small{font-size:11.5px;color:var(--muted)}
+.minne-btn .mb-ch{color:#e95464;font-size:20px;font-weight:700;flex:none}
 .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 0}
 .pcard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
 .pcard img{width:100%;aspect-ratio:1;object-fit:cover;background:#efe8da}
@@ -151,6 +158,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .pcard .order{margin:8px 0 0;display:block;text-align:center;background:var(--brand);color:#fff;border-radius:10px;
   padding:9px;font-size:12.5px;font-weight:700;text-decoration:none}
 .pcard .order.soldout{background:#cbc4b6;pointer-events:none}
+.pcard .order.minne{background:#e95464}
 .shop-note{background:#fdf7ec;border:1px dashed var(--gold);border-radius:12px;padding:12px 14px;margin:16px 0 0;font-size:12px;color:#8a6d2f}
 
 /* ===== ポイント ===== */
@@ -300,6 +308,9 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
   <!-- ========== 作品ショップ ========== -->
   <section class="view" id="v-shop">
     <h2 class="sec">作品ショップ</h2><p class="sec-en">Shop</p><div class="wgd"></div>
+    <a id="minneBtn" class="minne-btn" target="_blank" rel="noopener" style="display:none">
+      <span class="mb-ic">🧵</span><span class="mb-tx"><b>minne（ミンネ）で購入</b><small>ハンドメイド作品の販売ページへ</small></span><span class="mb-ch">›</span>
+    </a>
     <div class="shop-grid" id="shopGrid"></div>
     <div class="shop-note" id="shopNote"></div>
   </section>
@@ -426,6 +437,7 @@ const DEFAULT_CONFIG = {
     { name:"（作品名）", desc:"", price:"¥—", stock:"", img:"", soldout:false },
   ],
   orderVia: { type:"line", url:"https://www.instagram.com/wanon.toyota/" }, // type:"line"|"mail"。mailの時 url にメールアドレス
+  minneUrl: "", // minneショップ/商品ページのURL。入れると「minneで購入」ボタンが表示されます
   shopNote: "オーナーの作品を掲載予定です。気になる作品は「注文・お問い合わせ」からメッセージください。お支払い・お渡し方法は個別にご案内します。",
 
   // ポイントカード（試作）
@@ -553,10 +565,11 @@ function orderLink(name){const o=CONFIG.orderVia||{};
 }
 $('shopGrid').innerHTML=CONFIG.works.map(w=>{
   const img=w.img?'<img src="'+esc(w.img)+'" alt="">':'<img alt="" style="background:#efe8da">';
-  const btn=w.soldout?'<span class="order soldout">完売しました</span>':'<a class="order" href="'+esc(orderLink(w.name))+'" target="_blank" rel="noopener">注文・お問い合わせ</a>';
+  const btn=w.soldout?'<span class="order soldout">完売しました</span>':(w.buyUrl?'<a class="order minne" href="'+esc(w.buyUrl)+'" target="_blank" rel="noopener">minneで購入</a>':'<a class="order" href="'+esc(orderLink(w.name))+'" target="_blank" rel="noopener">注文・お問い合わせ</a>');
   return '<div class="pcard">'+img+'<div class="pb"><div class="pn">'+esc(w.name)+'</div>'+(w.desc?'<div class="pd">'+esc(w.desc)+'</div>':'<div class="pd"></div>')+'<div class="pp">'+esc(w.price)+' <span class="pstock">'+esc(w.stock||'')+'</span></div>'+btn+'</div></div>';
 }).join('');
 $('shopNote').textContent=CONFIG.shopNote||'';
+var mb=$('minneBtn');if(mb){if(CONFIG.minneUrl){mb.href=CONFIG.minneUrl;mb.style.display='';}else{mb.style.display='none';}}
 
 /* ---- ポイント ---- */
 const PKEY='wanon_stamps';
