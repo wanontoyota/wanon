@@ -135,6 +135,16 @@ a{color:var(--ac)}
       <button class="add" id="addSns" type="button">＋ SNSを追加</button>
     </div>
 
+    <div class="sec"><h2>おたより（メッセージ機能・任意）</h2>
+      <label class="toggle" style="margin:0 0 8px"><input type="checkbox" id="f_msg_on">この機能を使う（Firebase設定が必要）</label>
+      <label>見出し</label><input type="text" id="f_msg_title" placeholder="おたより">
+      <label>案内文</label><textarea id="f_msg_intro" style="min-height:56px"></textarea>
+      <p class="hint">お客様がメッセージを送り、お店が返信できます。「公開/非公開」をお客様が選べます。使うには下のFirebase設定と、お店用の管理ページ（admin.html）でのログインが必要です（別途手順あり）。</p>
+      <label>Firebase apiKey</label><input type="text" id="f_fb_apiKey" placeholder="AIza...">
+      <label>Firebase authDomain</label><input type="text" id="f_fb_authDomain" placeholder="xxxx.firebaseapp.com">
+      <label>Firebase projectId</label><input type="text" id="f_fb_projectId" placeholder="xxxx">
+      <label>Firebase appId</label><input type="text" id="f_fb_appId" placeholder="1:...:web:...">
+    </div>
     <div class="sec"><h2>アクセス解析（任意）</h2>
       <label>GoatCounter コード</label><input type="text" id="f_gc" placeholder="例：wanon（wanon.goatcounter.com のwanon部分）">
       <p class="hint">GoatCounter（無料）に登録して取得したコードを入れると、アプリを見た人数と「ポイント登録」した常連さんの数を、専用ページで確認できます。空欄なら解析はオフです。</p>
@@ -224,7 +234,8 @@ var DEFAULT_CONFIG = {
     { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/wanon.toyota/" }
   ],
   "footer": "© Kitchen&bar 和のん",
-  "analytics": { "goatcounter": "" }
+  "analytics": { "goatcounter": "" },
+  "messages": { "enabled": true, "title": "おたより", "intro": "ご質問・ご感想・ご予約のご相談など、お気軽にどうぞ。「みんなに公開してOK」か「お店だけに送る（非公開）」を選べます。", "firebase": { "apiKey": "", "authDomain": "", "projectId": "", "appId": "" } }
 };
 var LSKEY='wanon_editor_v1';
 var state = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
@@ -241,6 +252,10 @@ function bindV(id,fn){var el=$(id);el.addEventListener('input',function(){fn(el.
 function initBasic(){
   $('f_name').value=state.shopName||''; $('f_tag').value=state.tag||''; $('f_hours').value=state.hours||''; $('f_hours_note').value=state.hoursNote||'';
   state.analytics=state.analytics||{goatcounter:''}; $('f_gc').value=state.analytics.goatcounter||'';
+  state.messages=state.messages||{enabled:false,title:'おたより',intro:'',firebase:{}}; state.messages.firebase=state.messages.firebase||{};
+  $('f_msg_on').checked=state.messages.enabled!==false; $('f_msg_title').value=state.messages.title||''; $('f_msg_intro').value=state.messages.intro||'';
+  $('f_fb_apiKey').value=state.messages.firebase.apiKey||''; $('f_fb_authDomain').value=state.messages.firebase.authDomain||'';
+  $('f_fb_projectId').value=state.messages.firebase.projectId||''; $('f_fb_appId').value=state.messages.firebase.appId||'';
   state.story=state.story||{}; $('f_story_title').value=state.story.title||''; $('f_story_body').value=state.story.body||'';
   $('f_footer').value=state.footer||''; state.theme=state.theme||{}; $('f_brand').value=state.theme.brand||'#8f7c5b';
   var c=state.contact; // none
@@ -257,6 +272,11 @@ bindV('f_tag',function(v){state.tag=v;});
 bindV('f_hours',function(v){state.hours=v;});
 bindV('f_hours_note',function(v){state.hoursNote=v;});
 bindV('f_gc',function(v){state.analytics=state.analytics||{};state.analytics.goatcounter=v.trim();});
+$('f_msg_on').addEventListener('change',function(){state.messages=state.messages||{firebase:{}};state.messages.enabled=$('f_msg_on').checked;pushPreview();});
+bindV('f_msg_title',function(v){state.messages=state.messages||{firebase:{}};state.messages.title=v;});
+bindV('f_msg_intro',function(v){state.messages=state.messages||{firebase:{}};state.messages.intro=v;});
+function bindFB(id,key){bindV(id,function(v){state.messages=state.messages||{};state.messages.firebase=state.messages.firebase||{};state.messages.firebase[key]=v.trim();});}
+bindFB('f_fb_apiKey','apiKey');bindFB('f_fb_authDomain','authDomain');bindFB('f_fb_projectId','projectId');bindFB('f_fb_appId','appId');
 bindV('f_story_title',function(v){state.story.title=v;});
 bindV('f_story_body',function(v){state.story.body=v;});
 bindV('f_footer',function(v){state.footer=v;});
@@ -308,19 +328,18 @@ function renderMenu(){var box=$('menuList');box.innerHTML='';(state.menu||[]).fo
     '<div style="display:flex;gap:10px;margin-bottom:6px"><img class="thumb"'+(it.img?' src="'+esc(it.img)+'"':' style="display:none"')+' data-mci="'+ci+'" data-mii="'+ii+'"><div style="flex:1"><input type="file" accept="image/*" class="mfile" data-mci="'+ci+'" data-mii="'+ii+'"><div class="foot-actions"><button class="chip mclear" data-mci="'+ci+'" data-mii="'+ii+'" type="button">写真を消す</button></div></div></div>'+
     '<input type="text" placeholder="品名" data-ci="'+ci+'" data-ii="'+ii+'" data-k="name" value="'+esc(it.name)+'">'+
     '<input type="text" placeholder="説明（任意）" data-ci="'+ci+'" data-ii="'+ii+'" data-k="desc" value="'+esc(it.desc||'')+'" style="margin-top:5px">'+
-    '<div class="row" style="margin-top:5px"><input type="text" placeholder="価格 例:¥1,280" data-ci="'+ci+'" data-ii="'+ii+'" data-k="price" value="'+esc(it.price||'')+'">'+
-    '<label class="toggle" style="margin:0;justify-content:center"><input type="checkbox" data-ci="'+ci+'" data-ii="'+ii+'" data-k="veg"'+(it.veg?' checked':'')+'>veg</label></div></div>';}).join('');
+    '<input type="text" placeholder="価格 例:¥1,280" data-ci="'+ci+'" data-ii="'+ii+'" data-k="price" value="'+esc(it.price||'')+'" style="margin-top:5px"></div>';}).join('');
   d.innerHTML='<div class="top"><input type="text" class="t" style="font-size:14px" placeholder="カテゴリ名（例:ランチ）" data-cat="'+ci+'" value="'+esc(cat.cat)+'"><button class="chip del" data-delcat="'+ci+'" type="button">カテゴリ削除</button></div>'+itemsHtml+'<button class="chip" data-additem="'+ci+'" type="button" style="margin-top:6px">＋品目</button>';
   box.appendChild(d);});
   // bind
   box.querySelectorAll('input[data-cat]').forEach(function(el){el.addEventListener('input',function(){state.menu[+el.getAttribute('data-cat')].cat=el.value;pushPreview();});});
   box.querySelectorAll('[data-delcat]').forEach(function(b){b.onclick=function(){state.menu.splice(+b.getAttribute('data-delcat'),1);renderMenu();pushPreview();};});
-  box.querySelectorAll('[data-additem]').forEach(function(b){b.onclick=function(){var ci=+b.getAttribute('data-additem');state.menu[ci].items.push({name:'',desc:'',price:'',veg:false});renderMenu();pushPreview();};});
+  box.querySelectorAll('[data-additem]').forEach(function(b){b.onclick=function(){var ci=+b.getAttribute('data-additem');state.menu[ci].items.push({name:'',desc:'',price:'',img:''});renderMenu();pushPreview();};});
   box.querySelectorAll('[data-di]').forEach(function(b){b.onclick=function(){state.menu[+b.getAttribute('data-di')].items.splice(+b.getAttribute('data-dj'),1);renderMenu();pushPreview();};});
   box.querySelectorAll('input[data-ci][data-ii]').forEach(function(el){var ev=el.type==='checkbox'?'change':'input';el.addEventListener(ev,function(){var it=state.menu[+el.getAttribute('data-ci')].items[+el.getAttribute('data-ii')];var k=el.getAttribute('data-k');it[k]=el.type==='checkbox'?el.checked:el.value;pushPreview();});});
   box.querySelectorAll('.mfile').forEach(function(el){el.addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var ci=+el.getAttribute('data-mci'),ii=+el.getAttribute('data-mii');fileToImg(f,function(im){state.menu[ci].items[ii].img=sqData(im,480);renderMenu();pushPreview();});});});
   box.querySelectorAll('.mclear').forEach(function(b){b.onclick=function(){state.menu[+b.getAttribute('data-mci')].items[+b.getAttribute('data-mii')].img='';renderMenu();pushPreview();};});}
-$('addCat').onclick=function(){state.menu=state.menu||[];state.menu.push({cat:'新カテゴリ',items:[{name:'',desc:'',price:'',veg:false}]});renderMenu();pushPreview();};
+$('addCat').onclick=function(){state.menu=state.menu||[];state.menu.push({cat:'新カテゴリ',items:[{name:'',desc:'',price:'',img:''}]});renderMenu();pushPreview();};
 
 /* ---------- イベント ---------- */
 function renderEvents(){var box=$('eventList');box.innerHTML='';(state.events||[]).forEach(function(ev,i){
