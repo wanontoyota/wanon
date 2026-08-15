@@ -342,7 +342,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
         <span><i style="background:#e3efe0"></i>ランチのみ</span>
         <span><i style="background:#f6e7e4"></i>定休</span>
         <span><i style="background:#fdf3d8"></i>特別</span>
-        <span>🌕 月とうさぎ</span>
+        <span>🌕 月うさぎ</span>
       </div>
     </div>
     <p class="pt-hint" id="calNote"></p>
@@ -464,7 +464,7 @@ const DEFAULT_CONFIG = {
     specialClosed: [],             // 臨時休業日（YYYY-MM-DD）を追記
     specialOpen: [],               // 臨時営業日（定休だけど営業）
     lunchOnly: [],                 // ランチのみ営業の日（YYYY-MM-DD）
-    moonRabbit: [],                // 月とうさぎスタンプの日（YYYY-MM-DD）
+    moonRabbit: [],                // 月うさぎスタンプの日（YYYY-MM-DD）
     topNote: "",                   // カレンダー上部の説明文（編集可）
     note: "定休：月曜（ほか月1回不定休あり）。土日はランチ11:30〜。最新はInstagramをご確認ください。"
   },
@@ -633,7 +633,7 @@ function renderCal(){
     else if(c.lunchOnly&&c.lunchOnly.indexOf(s)>=0){cls='lunch';mk='昼のみ';}
     else if(c.specialOpen&&c.specialOpen.indexOf(s)>=0){cls='special';mk='営業';}
     else if(c.closedWeekdays&&c.closedWeekdays.indexOf(dt.getDay())>=0){cls='closed';mk='休';}
-    var moon=(c.moonRabbit&&c.moonRabbit.indexOf(s)>=0)?'<span class="moon" aria-label="月とうさぎ">🌕</span>':'';
+    var moon=(c.moonRabbit&&c.moonRabbit.indexOf(s)>=0)?'<span class="moon" aria-label="月うさぎ">🌕</span>':'';
     html+='<div class="cell '+cls+(s===today?' today':'')+'"><span>'+d+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+moon+'</div>';
   }
   $('calGrid').innerHTML=html;
