@@ -93,6 +93,10 @@ a{color:var(--ac)}
       <label>ランチのみ営業の日</label>
       <div class="row"><input type="date" id="lo_date"><button class="chip" id="lo_add" type="button">＋ランチのみ</button></div>
       <div id="loList" style="margin-top:8px"></div>
+      <label>🌕 月とうさぎの日（スタンプを押す日）</label>
+      <div class="row"><input type="date" id="mo_date"><button class="chip" id="mo_add" type="button">＋月とうさぎ</button></div>
+      <div id="moList" style="margin-top:8px"></div>
+      <label>カレンダー上部の説明（時間・マークの説明など）</label><textarea id="f_cal_topnote" style="min-height:60px" placeholder="例：🌕 月とうさぎの日は満月メニューをご用意します。営業時間 11:00〜15:00 / 17:30〜22:00"></textarea>
       <label>カレンダーの注記</label><textarea id="f_cal_note" style="min-height:60px"></textarea>
     </div>
 
@@ -209,6 +213,8 @@ var DEFAULT_CONFIG = {
     "specialClosed": [],
     "specialOpen": [],
     "lunchOnly": [],
+    "moonRabbit": [],
+    "topNote": "",
     "note": "定休：月曜（ほか月1回不定休あり）。最新はInstagramをご確認ください。"
   },
   "menu": [
@@ -273,7 +279,7 @@ function initBasic(){
   $('ac_addr').value=state.address||''; $('ac_map').value=state.mapQuery||''; $('ac_tel').value=state.tel||'';
   state.orderVia=state.orderVia||{type:'line',url:''}; $('ov_type').value=state.orderVia.type||'line'; $('ov_url').value=state.orderVia.url||'';
   $('f_shopnote').value=state.shopNote||''; $('f_minne').value=state.minneUrl||''; $('f_menutax').checked=!!state.menuTax;
-  state.calendar=state.calendar||{closedWeekdays:[],specialClosed:[],specialOpen:[],lunchOnly:[],note:''}; state.calendar.lunchOnly=state.calendar.lunchOnly||[]; $('f_cal_note').value=state.calendar.note||'';
+  state.calendar=state.calendar||{closedWeekdays:[],specialClosed:[],specialOpen:[],lunchOnly:[],moonRabbit:[],note:'',topNote:''}; state.calendar.lunchOnly=state.calendar.lunchOnly||[]; state.calendar.moonRabbit=state.calendar.moonRabbit||[]; $('f_cal_note').value=state.calendar.note||''; $('f_cal_topnote').value=state.calendar.topNote||'';
   updateLogoPrev();
 }
 bindV('f_name',function(v){state.shopName=v;});
@@ -305,6 +311,7 @@ bindV('f_shopnote',function(v){state.shopNote=v;});
 bindV('f_minne',function(v){state.minneUrl=v.trim();});
 $('f_menutax').addEventListener('change',function(){state.menuTax=$('f_menutax').checked;pushPreview();});
 bindV('f_cal_note',function(v){state.calendar.note=v;});
+bindV('f_cal_topnote',function(v){state.calendar.topNote=v;});
 
 /* ---------- ロゴ ---------- */
 function updateLogoPrev(){var im=$('logoPrev');if(state.logo){im.src=state.logo;}else{im.removeAttribute('src');}}
@@ -327,6 +334,7 @@ function renderDates(key,listId){var wrap=$(listId);var arr=state.calendar[key]|
 $('sc_add').onclick=function(){var d=$('sc_date').value;if(!d)return;state.calendar.specialClosed=state.calendar.specialClosed||[];state.calendar.specialClosed.push(d);renderDates('specialClosed','scList');pushPreview();};
 $('so_add').onclick=function(){var d=$('so_date').value;if(!d)return;state.calendar.specialOpen=state.calendar.specialOpen||[];state.calendar.specialOpen.push(d);renderDates('specialOpen','soList');pushPreview();};
 $('lo_add').onclick=function(){var d=$('lo_date').value;if(!d)return;state.calendar.lunchOnly=state.calendar.lunchOnly||[];state.calendar.lunchOnly.push(d);renderDates('lunchOnly','loList');pushPreview();};
+$('mo_add').onclick=function(){var d=$('mo_date').value;if(!d)return;state.calendar.moonRabbit=state.calendar.moonRabbit||[];state.calendar.moonRabbit.push(d);renderDates('moonRabbit','moList');pushPreview();};
 
 /* ---------- メニュー ---------- */
 /* 画像ヘルパー */
@@ -444,7 +452,7 @@ $('btnReload').onclick=function(){loadCurrent();};
 $('btnPrev').onclick=pushPreview;
 
 /* ---------- 初期化 ---------- */
-function renderAll(){initBasic();renderWd();renderDates('specialClosed','scList');renderDates('specialOpen','soList');renderDates('lunchOnly','loList');renderMenu();renderEvents();renderWorks();renderSns();
+function renderAll(){initBasic();renderWd();renderDates('specialClosed','scList');renderDates('specialOpen','soList');renderDates('lunchOnly','loList');renderDates('moonRabbit','moList');renderMenu();renderEvents();renderWorks();renderSns();
   var gh=loadGH();$('g_owner').value=gh.owner||'';$('g_repo').value=gh.repo||'';$('g_branch').value=gh.branch||'main';$('g_path').value=gh.path||'config.json';$('g_token').value=gh.token||'';}
 function loadCurrent(){fetch('config.json?t='+Date.now()).then(function(r){return r.ok?r.json():null;}).then(function(c){if(c){state=c;renderAll();pushPreview();setStatus('saveStatus','info','現在の保存内容を読み込みました。');}}).catch(function(){});}
 renderAll();

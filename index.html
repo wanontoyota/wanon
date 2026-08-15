@@ -164,6 +164,8 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .cell.lunch{background:#e3efe0;color:#4f7a44}
 .cell.today{outline:2px solid var(--brand)}
 .cell .mk{font-size:9px;margin-top:1px}
+.cell .moon{position:absolute;top:1px;right:2px;font-size:12px;line-height:1}
+.cal-topnote{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:12px;padding:11px 13px;margin:0 0 12px;font-size:13px;color:var(--ink);line-height:1.8;white-space:pre-wrap;box-shadow:var(--shadow)}
 .legend{display:flex;gap:14px;justify-content:center;margin:12px 0 0;font-size:11px;color:var(--muted);flex-wrap:wrap}
 .legend span{display:inline-flex;align-items:center;gap:5px}
 .legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
@@ -204,7 +206,13 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .pt-actions input{flex:1;border:1px solid var(--line);border-radius:10px;padding:11px;font-family:inherit;font-size:14px}
 .pt-actions button{border:none;background:var(--olive);color:#fff;border-radius:10px;padding:11px 16px;font-weight:700;font-family:inherit;cursor:pointer}
 .pt-hint{font-size:11.5px;color:var(--on-wood-mut);margin:12px 4px 0;text-align:center}
-.pt-line{display:block;text-align:center;background:#06c755;color:#fff;font-weight:800;font-family:"Zen Maru Gothic",inherit;border-radius:14px;padding:16px;margin:16px 0 0;text-decoration:none;box-shadow:0 8px 20px rgba(6,199,85,.32);letter-spacing:.03em}
+.pt-lead{color:var(--on-wood);font-size:14px;line-height:1.8;margin:0 4px 4px;text-shadow:0 1px 2px rgba(30,18,6,.35)}
+.pt-line{display:block;text-align:center;background:#06c755;color:#fff;font-weight:800;font-family:"Zen Maru Gothic",inherit;border-radius:14px;padding:16px;margin:14px 0 0;text-decoration:none;box-shadow:0 8px 20px rgba(6,199,85,.32);letter-spacing:.03em}
+.pt-steps{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:14px 0 0;box-shadow:var(--shadow)}
+.pt-steps h4{font-family:"Zen Maru Gothic";font-size:15px;margin:0 0 10px;color:var(--brand-d)}
+.pt-steps ol{margin:0;padding-left:1.3em}
+.pt-steps li{font-size:13.5px;line-height:1.85;margin-bottom:7px;color:var(--ink)}
+.pt-steps-note{font-size:12px;color:var(--muted);line-height:1.7;margin:8px 0 0}
 .pt-line:active{transform:scale(.98)}
 
 /* ===== アクセス ===== */
@@ -321,6 +329,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
   <section class="view" id="v-cal">
     <h2 class="sec">営業時間</h2><p class="sec-en">Hours</p><div class="wgd"></div>
     <div class="info-row"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><div class="ir-t">営業時間</div><div class="ir-v" id="hoursV"></div><div class="ir-note" id="hoursNote"></div></div></div>
+    <p class="cal-topnote" id="calTopNote" style="display:none"></p>
     <div class="cal-head">
       <button id="calPrev">‹</button>
       <div class="cal-title" id="calTitle"></div>
@@ -333,6 +342,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
         <span><i style="background:#e3efe0"></i>ランチのみ</span>
         <span><i style="background:#f6e7e4"></i>定休</span>
         <span><i style="background:#fdf3d8"></i>特別</span>
+        <span>🌕 月とうさぎ</span>
       </div>
     </div>
     <p class="pt-hint" id="calNote"></p>
@@ -351,12 +361,17 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
   <!-- ========== ポイント ========== -->
   <section class="view" id="v-point">
     <h2 class="sec">ポイントカード</h2><p class="sec-en">Point Card</p><div class="wgd"></div>
-    <div class="pt-card">
-      <h3 id="ptTitle"></h3>
-      <div class="pt-sub" id="ptSub"></div>
+    <p class="pt-lead" id="ptSub"></p>
+    <a id="ptLineBtn" class="pt-line" target="_blank" rel="noopener" style="display:none">LINEのスタンプカードを開く</a>
+    <div class="pt-steps" id="ptLineHint" style="display:none">
+      <h4>スタンプの貯め方</h4>
+      <ol>
+        <li>上のボタンからLINEのショップカードを開きます（初めての方は、そのままカードが登録されます）。</li>
+        <li>ご来店時に、店頭のQRコードを読み取るとスタンプが1つたまります。</li>
+        <li>スタンプが規定数たまると、特典と交換できます。</li>
+      </ol>
+      <p class="pt-steps-note">すでに登録済みの方も、上のボタンからいつでも自分のカードを開いてスタンプを確認できます。端末を変えても引き継がれます。</p>
     </div>
-    <a id="ptLineBtn" class="pt-line" target="_blank" rel="noopener" style="display:none">LINEでスタンプを貯める</a>
-    <p class="pt-hint" id="ptLineHint" style="display:none">スタンプ・特典はLINEのショップカードで管理します。上のボタンからカードを開いてください。<br>ご来店時に店頭のQRコードを読み取るとスタンプが押されます（端末を変えても引き継がれます）。</p>
     <p class="pt-hint" id="ptNoLine" style="display:none">ただいまLINEショップカード（ポイント）を準備中です。公開までもうしばらくお待ちください。</p>
   </section>
 
@@ -449,6 +464,8 @@ const DEFAULT_CONFIG = {
     specialClosed: [],             // 臨時休業日（YYYY-MM-DD）を追記
     specialOpen: [],               // 臨時営業日（定休だけど営業）
     lunchOnly: [],                 // ランチのみ営業の日（YYYY-MM-DD）
+    moonRabbit: [],                // 月とうさぎスタンプの日（YYYY-MM-DD）
+    topNote: "",                   // カレンダー上部の説明文（編集可）
     note: "定休：月曜（ほか月1回不定休あり）。土日はランチ11:30〜。最新はInstagramをご確認ください。"
   },
 
@@ -616,9 +633,11 @@ function renderCal(){
     else if(c.lunchOnly&&c.lunchOnly.indexOf(s)>=0){cls='lunch';mk='昼のみ';}
     else if(c.specialOpen&&c.specialOpen.indexOf(s)>=0){cls='special';mk='営業';}
     else if(c.closedWeekdays&&c.closedWeekdays.indexOf(dt.getDay())>=0){cls='closed';mk='休';}
-    html+='<div class="cell '+cls+(s===today?' today':'')+'"><span>'+d+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+'</div>';
+    var moon=(c.moonRabbit&&c.moonRabbit.indexOf(s)>=0)?'<span class="moon" aria-label="月とうさぎ">🌕</span>':'';
+    html+='<div class="cell '+cls+(s===today?' today':'')+'"><span>'+d+'</span>'+(mk?'<span class="mk">'+mk+'</span>':'')+moon+'</div>';
   }
   $('calGrid').innerHTML=html;
+  var tn=$('calTopNote');if(tn){tn.textContent=(CONFIG.calendar&&CONFIG.calendar.topNote)||'';tn.style.display=(CONFIG.calendar&&CONFIG.calendar.topNote)?'':'none';}
 }
 $('calNote').textContent=CONFIG.calendar.note||'';$('calNote').style.display=CONFIG.calendar.note?'':'none';
 $('calPrev').onclick=()=>{calDate.setMonth(calDate.getMonth()-1);renderCal();};
@@ -641,8 +660,7 @@ var mb=$('minneBtn');if(mb){if(CONFIG.minneUrl){mb.href=CONFIG.minneUrl;mb.style
 /* ---- ポイント（LINEショップカードへ誘導） ---- */
 function renderPoint(){
   const p=CONFIG.point||{};
-  $('ptTitle').textContent=p.title||'ポイントカード';
-  $('ptSub').textContent=p.sub||'LINEのショップカードでスタンプが貯まります';
+  $('ptSub').textContent=p.sub||'LINEのショップカードでスタンプを貯めて、特典と交換できます。';
   if(p.lineUrl){
     $('ptLineBtn').href=p.lineUrl;$('ptLineBtn').style.display='';
     $('ptLineHint').style.display='';$('ptNoLine').style.display='none';
