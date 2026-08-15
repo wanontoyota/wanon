@@ -45,7 +45,11 @@
     ],
     "note": "",
     "lunchOnly": [],
-    "moonRabbit": [],
+    "moonRabbit": [
+      "2026-08-19",
+      "2026-08-26",
+      "2026-08-05"
+    ],
     "topNote": ""
   },
   "menu": [
