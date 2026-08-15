@@ -323,19 +323,10 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
     <div class="pt-card">
       <h3 id="ptTitle"></h3>
       <div class="pt-sub" id="ptSub"></div>
-      <div class="stamps" id="stamps"></div>
-      <div class="pt-reward" id="ptReward"></div>
     </div>
     <a id="ptLineBtn" class="pt-line" target="_blank" rel="noopener" style="display:none">LINEでスタンプを貯める</a>
-    <p class="pt-hint" id="ptLineHint" style="display:none">スタンプはLINEのショップカードに貯まります。上のボタンからカードを開いてください（端末を変えても引き継がれます）。</p>
-    <div id="ptLocal">
-      <div class="pt-actions">
-        <input type="password" id="ptPin" placeholder="お店のPINを入力" inputmode="numeric">
-        <button id="ptAdd">スタンプ</button>
-      </div>
-      <p class="pt-hint">来店時にお店の方がPINを入力してスタンプを押します。<br>※試作版：スタンプはこの端末に保存されます。</p>
-      <div style="text-align:center;margin-top:10px"><button id="ptReset" style="background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline">スタンプをリセット</button></div>
-    </div>
+    <p class="pt-hint" id="ptLineHint" style="display:none">スタンプ・特典はLINEのショップカードで管理します。上のボタンからカードを開いてください。<br>ご来店時に店頭のQRコードを読み取るとスタンプが押されます（端末を変えても引き継がれます）。</p>
+    <p class="pt-hint" id="ptNoLine" style="display:none">ただいまLINEショップカード（ポイント）を準備中です。公開までもうしばらくお待ちください。</p>
   </section>
 
   <!-- ========== アクセス ========== -->
@@ -574,30 +565,19 @@ $('shopGrid').innerHTML=CONFIG.works.map(w=>{
 $('shopNote').textContent=CONFIG.shopNote||'';
 var mb=$('minneBtn');if(mb){if(CONFIG.minneUrl){mb.href=CONFIG.minneUrl;mb.style.display='';}else{mb.style.display='none';}}
 
-/* ---- ポイント ---- */
-const PKEY='wanon_stamps';
-function getStamps(){try{return parseInt(localStorage.getItem(PKEY)||'0',10)||0;}catch(e){return window.__st||0;}}
-function setStamps(n){try{localStorage.setItem(PKEY,String(n));}catch(e){window.__st=n;}}
+/* ---- ポイント（LINEショップカードへ誘導） ---- */
 function renderPoint(){
-  const p=CONFIG.point||{};$('ptTitle').textContent=p.title||'';
+  const p=CONFIG.point||{};
+  $('ptTitle').textContent=p.title||'ポイントカード';
+  $('ptSub').textContent=p.sub||'LINEのショップカードでスタンプが貯まります';
   if(p.lineUrl){
-    $('ptSub').textContent=p.sub||'LINEでスタンプが貯まります';
-    $('ptLineBtn').href=p.lineUrl;$('ptLineBtn').style.display='';$('ptLineHint').style.display='';$('ptLocal').style.display='none';
-    let h='';for(let i=0;i<(p.total||10);i++)h+='<div class="stamp"></div>';$('stamps').innerHTML=h;
-    $('ptReward').textContent=p.reward||'';return;
+    $('ptLineBtn').href=p.lineUrl;$('ptLineBtn').style.display='';
+    $('ptLineHint').style.display='';$('ptNoLine').style.display='none';
+  }else{
+    $('ptLineBtn').style.display='none';
+    $('ptLineHint').style.display='none';$('ptNoLine').style.display='';
   }
-  $('ptLineBtn').style.display='none';$('ptLineHint').style.display='none';$('ptLocal').style.display='';
-  $('ptSub').textContent=p.sub;
-  const n=Math.min(getStamps(),p.total);let h='';
-  for(let i=0;i<p.total;i++){h+='<div class="stamp'+(i<n?' on':'')+'">'+(i<n?'●':'')+'</div>';}
-  $('stamps').innerHTML=h;
-  $('ptReward').textContent=n>=p.total?p.reward:('あと '+(p.total-n)+' 個で '+(p.reward||'').replace(/^🎁\s*/,''));
 }
-$('ptAdd').onclick=()=>{const p=CONFIG.point;if($('ptPin').value!==String(p.pin)){alert('PINが違います');return;}
-  let n=getStamps();if(n>=p.total)n=0; n++; setStamps(n);$('ptPin').value='';renderPoint();
-  try{if(!localStorage.getItem('wanon_pt_reg')){localStorage.setItem('wanon_pt_reg','1');window.__wanonCount&&window.__wanonCount('point-register');}}catch(e){}
-  if(n>=p.total)setTimeout(()=>alert('コンプリート！ '+p.reward),200);};
-$('ptReset').onclick=()=>{if(confirm('スタンプをリセットしますか？')){setStamps(0);renderPoint();}};
 renderPoint();
 
 /* ---- アクセス ---- */
