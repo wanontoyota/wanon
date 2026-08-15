@@ -158,10 +158,10 @@
     "title": "おたより",
     "intro": "ご質問・ご感想・ご予約のご相談など、お気軽にどうぞ。「みんなに公開してOK」か「お店だけに送る（非公開）」を選べます。",
     "firebase": {
-      "apiKey": "",
-      "authDomain": "",
-      "projectId": "",
-      "appId": ""
+      "apiKey": "AIzaSyDWfHdnBzYp0871vCxjsC5CJjBDhFAtmJU",
+      "authDomain": "wanon-9ec6f.firebaseapp.com",
+      "projectId": "wanon-9ec6f",
+      "appId": "1:514012011565:web:84c6166ff4a2ea5d87eca4"
     }
   }
 }
