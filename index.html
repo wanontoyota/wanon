@@ -177,6 +177,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .info-row .ico{width:22px;height:22px;color:var(--brand);flex:none;margin-top:2px}
 .info-row .ir-t{font-size:11px;color:var(--muted)}
 .info-row .ir-v{font-size:14px;font-weight:600}
+.info-row .ir-note{font-size:12px;color:#a86b3c;font-weight:600;margin-top:5px;line-height:1.6}
 .sns{display:flex;gap:10px;margin:14px 0 0}
 .sns a{flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-decoration:none;color:var(--ink);font-size:12px;font-weight:700;box-shadow:var(--shadow)}
 .sns a .ico{width:22px;height:22px;margin:0 auto 5px;color:var(--brand)}
@@ -228,7 +229,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
   <!-- ========== カレンダー ========== -->
   <section class="view" id="v-cal">
     <h2 class="sec">営業時間</h2><p class="sec-en">Hours</p><div class="wgd"></div>
-    <div class="info-row"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><div class="ir-t">営業時間</div><div class="ir-v" id="hoursV"></div></div></div>
+    <div class="info-row"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><div class="ir-t">営業時間</div><div class="ir-v" id="hoursV"></div><div class="ir-note" id="hoursNote"></div></div></div>
     <div class="cal-head">
       <button id="calPrev">‹</button>
       <div class="cal-title" id="calTitle"></div>
@@ -420,7 +421,7 @@ function isClosed(d){const c=CONFIG.calendar;const s=ymd(d);
 /* ---- メニュー ---- */
 $('menuList').innerHTML=CONFIG.menu.map(cat=>{
   return '<div class="mcat">'+esc(cat.cat)+'</div>'+cat.items.map(it=>{
-    const img=it.img?'<img src="'+esc(it.img)+'" alt="">':'<img alt="" style="visibility:hidden">';
+    const img=it.img?'<img src="'+esc(it.img)+'" alt="">':'';
     return '<div class="mitem">'+img+'<div class="mi-b"><div class="mi-n">'+esc(it.name)+(it.veg?'<span class="badge-veg">veg</span>':'')+'</div>'+(it.desc?'<div class="mi-d">'+esc(it.desc)+'</div>':'')+'<div class="mi-p">'+esc(it.price)+'</div></div></div>';
   }).join('');
 }).join('');
@@ -485,6 +486,7 @@ function renderPoint(){
 }
 $('ptAdd').onclick=()=>{const p=CONFIG.point;if($('ptPin').value!==String(p.pin)){alert('PINが違います');return;}
   let n=getStamps();if(n>=p.total)n=0; n++; setStamps(n);$('ptPin').value='';renderPoint();
+  try{if(!localStorage.getItem('wanon_pt_reg')){localStorage.setItem('wanon_pt_reg','1');window.__wanonCount&&window.__wanonCount('point-register');}}catch(e){}
   if(n>=p.total)setTimeout(()=>alert('コンプリート！ '+p.reward),200);};
 $('ptReset').onclick=()=>{if(confirm('スタンプをリセットしますか？')){setStamps(0);renderPoint();}};
 renderPoint();
@@ -495,6 +497,7 @@ $('addrV').textContent=CONFIG.address;
 $('addrRow').href='https://maps.google.com/?q='+encodeURIComponent(CONFIG.address);
 $('telV').textContent=CONFIG.tel; $('telRow').href='tel:'+(CONFIG.tel||'').replace(/[^0-9+]/g,'');
 $('hoursV').textContent=CONFIG.hours;
+var hn=$('hoursNote');if(hn){hn.textContent=CONFIG.hoursNote||'';hn.style.display=CONFIG.hoursNote?'':'none';}
 var snsHTML=(CONFIG.sns||[]).map(s=>'<a href="'+esc(s.url)+'" target="_blank" rel="noopener"><div class="ico">'+svg(s.type)+'</div>'+esc(s.label)+'</a>').join('');
 var snsR=$('snsRow');if(snsR){snsR.innerHTML=snsHTML;}
 var snsH=$('snsHome');if(snsH){snsH.innerHTML=snsHTML;snsH.style.display=snsHTML?'':'none';}
@@ -527,6 +530,19 @@ function go(k){document.querySelectorAll('.view').forEach(v=>v.classList.remove(
   window.scrollTo(0,0);}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.getAttribute('data-k')));
 document.querySelectorAll('[data-go]').forEach(t=>t.onclick=()=>go(t.getAttribute('data-go')));
+
+/* ---- アクセス解析（GoatCounter・任意） ---- */
+window.__wanonCount=function(path){try{if(window.goatcounter&&window.goatcounter.count)window.goatcounter.count({path:path,event:true});}catch(e){}};
+try{
+  var gcCode=(CONFIG.analytics&&CONFIG.analytics.goatcounter||'').trim();
+  if(gcCode&&!window.__gcInit&&window.top===window.self){
+    window.__gcInit=true;
+    var gcs=document.createElement('script');gcs.async=true;gcs.src='//gc.zgo.at/count.js';
+    gcs.setAttribute('data-goatcounter','https://'+gcCode+'.goatcounter.com/count');
+    document.head.appendChild(gcs);
+  }
+}catch(e){}
+
 go('home');
 }
 /* config.jsonを読み込んで表示（無ければ既定）。編集ページからのプレビューにも対応 */

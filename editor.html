@@ -64,6 +64,7 @@ a{color:var(--ac)}
       <label>店名</label><input type="text" id="f_name">
       <label>ひとこと（トップの短い紹介）</label><input type="text" id="f_tag">
       <label>営業時間（表示用テキスト）</label><input type="text" id="f_hours">
+      <label>営業時間の補足（土日・祝など／任意）</label><input type="text" id="f_hours_note" placeholder="例：※土日・祝日はランチ11:30〜">
       <label>こだわり・見出し</label><input type="text" id="f_story_title">
       <label>こだわり・本文（改行OK）</label><textarea id="f_story_body"></textarea>
       <p style="font-size:11px;color:var(--muted);margin:4px 2px 0;line-height:1.6">行を【　】で囲むと見出し（緑の小見出し）になります。例：【プラントベース】</p>
@@ -134,6 +135,10 @@ a{color:var(--ac)}
       <button class="add" id="addSns" type="button">＋ SNSを追加</button>
     </div>
 
+    <div class="sec"><h2>アクセス解析（任意）</h2>
+      <label>GoatCounter コード</label><input type="text" id="f_gc" placeholder="例：wanon（wanon.goatcounter.com のwanon部分）">
+      <p class="hint">GoatCounter（無料）に登録して取得したコードを入れると、アプリを見た人数と「ポイント登録」した常連さんの数を、専用ページで確認できます。空欄なら解析はオフです。</p>
+    </div>
     <div class="sec"><h2>保存設定（GitHub）</h2>
       <details class="gh"><summary>接続情報を入力（最初の1回だけ）</summary>
         <p class="hint">下の情報はこの端末のブラウザ内だけに保存され、アプリやコードには書き込まれません。トークンは fine-grained token で対象リポジトリの Contents を Read and write に。</p>
@@ -182,11 +187,12 @@ var DEFAULT_CONFIG = {
     { "date": "2026-09-20", "title": "夜のクラフトバー", "tag": "バー", "desc": "月替わりのクラフトドリンクと小皿料理で、ゆっくり過ごす夜を。", "img": "" }
   ],
   "hours": "ランチ 11:00–15:00 ／ ディナー 17:30–22:00",
+  "hoursNote": "※土日・祝日はランチ11:30〜オープン",
   "calendar": {
     "closedWeekdays": [1],
     "specialClosed": [],
     "specialOpen": [],
-    "note": "定休：月曜（ほか月1回不定休あり）。土日はランチ11:30〜。最新はInstagramをご確認ください。"
+    "note": "定休：月曜（ほか月1回不定休あり）。最新はInstagramをご確認ください。"
   },
   "menu": [
     { "cat": "ランチ（※仮メニュー）", "items": [
@@ -217,7 +223,8 @@ var DEFAULT_CONFIG = {
   "sns": [
     { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/wanon.toyota/" }
   ],
-  "footer": "© Kitchen&bar 和のん"
+  "footer": "© Kitchen&bar 和のん",
+  "analytics": { "goatcounter": "" }
 };
 var LSKEY='wanon_editor_v1';
 var state = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
@@ -232,7 +239,8 @@ function esc(s){return (s||'').replace(/[<>&"]/g,function(c){return {'<':'&lt;',
 /* ---------- 基本情報 ---------- */
 function bindV(id,fn){var el=$(id);el.addEventListener('input',function(){fn(el.value);pushPreview();});}
 function initBasic(){
-  $('f_name').value=state.shopName||''; $('f_tag').value=state.tag||''; $('f_hours').value=state.hours||'';
+  $('f_name').value=state.shopName||''; $('f_tag').value=state.tag||''; $('f_hours').value=state.hours||''; $('f_hours_note').value=state.hoursNote||'';
+  state.analytics=state.analytics||{goatcounter:''}; $('f_gc').value=state.analytics.goatcounter||'';
   state.story=state.story||{}; $('f_story_title').value=state.story.title||''; $('f_story_body').value=state.story.body||'';
   $('f_footer').value=state.footer||''; state.theme=state.theme||{}; $('f_brand').value=state.theme.brand||'#8f7c5b';
   var c=state.contact; // none
@@ -247,6 +255,8 @@ function initBasic(){
 bindV('f_name',function(v){state.shopName=v;});
 bindV('f_tag',function(v){state.tag=v;});
 bindV('f_hours',function(v){state.hours=v;});
+bindV('f_hours_note',function(v){state.hoursNote=v;});
+bindV('f_gc',function(v){state.analytics=state.analytics||{};state.analytics.goatcounter=v.trim();});
 bindV('f_story_title',function(v){state.story.title=v;});
 bindV('f_story_body',function(v){state.story.body=v;});
 bindV('f_footer',function(v){state.footer=v;});
@@ -287,10 +297,15 @@ $('sc_add').onclick=function(){var d=$('sc_date').value;if(!d)return;state.calen
 $('so_add').onclick=function(){var d=$('so_date').value;if(!d)return;state.calendar.specialOpen=state.calendar.specialOpen||[];state.calendar.specialOpen.push(d);renderDates('specialOpen','soList');pushPreview();};
 
 /* ---------- メニュー ---------- */
+/* 画像ヘルパー */
+function fileToImg(file,cb){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){cb(im);};im.src=r.result;};r.readAsDataURL(file);}
+function sqData(im,S){var c=document.createElement('canvas');var s=Math.min(im.width,im.height),sx=(im.width-s)/2,sy=(im.height-s)/2;c.width=S;c.height=S;c.getContext('2d').drawImage(im,sx,sy,s,s,0,0,S,S);return c.toDataURL('image/jpeg',0.82);}
+function fitData(im,maxW){var scale=Math.min(1,maxW/im.width);var w=Math.round(im.width*scale),h=Math.round(im.height*scale);var c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);return c.toDataURL('image/jpeg',0.82);}
 function renderMenu(){var box=$('menuList');box.innerHTML='';(state.menu||[]).forEach(function(cat,ci){
   var d=document.createElement('div');d.className='item';
   var itemsHtml=(cat.items||[]).map(function(it,ii){return '<div class="item" style="background:#fff">'+
     '<div class="top"><span class="t">品目 '+(ii+1)+'</span><button class="chip del" data-di="'+ci+'" data-dj="'+ii+'" type="button">削除</button></div>'+
+    '<div style="display:flex;gap:10px;margin-bottom:6px"><img class="thumb"'+(it.img?' src="'+esc(it.img)+'"':' style="display:none"')+' data-mci="'+ci+'" data-mii="'+ii+'"><div style="flex:1"><input type="file" accept="image/*" class="mfile" data-mci="'+ci+'" data-mii="'+ii+'"><div class="foot-actions"><button class="chip mclear" data-mci="'+ci+'" data-mii="'+ii+'" type="button">写真を消す</button></div></div></div>'+
     '<input type="text" placeholder="品名" data-ci="'+ci+'" data-ii="'+ii+'" data-k="name" value="'+esc(it.name)+'">'+
     '<input type="text" placeholder="説明（任意）" data-ci="'+ci+'" data-ii="'+ii+'" data-k="desc" value="'+esc(it.desc||'')+'" style="margin-top:5px">'+
     '<div class="row" style="margin-top:5px"><input type="text" placeholder="価格 例:¥1,280" data-ci="'+ci+'" data-ii="'+ii+'" data-k="price" value="'+esc(it.price||'')+'">'+
@@ -302,7 +317,9 @@ function renderMenu(){var box=$('menuList');box.innerHTML='';(state.menu||[]).fo
   box.querySelectorAll('[data-delcat]').forEach(function(b){b.onclick=function(){state.menu.splice(+b.getAttribute('data-delcat'),1);renderMenu();pushPreview();};});
   box.querySelectorAll('[data-additem]').forEach(function(b){b.onclick=function(){var ci=+b.getAttribute('data-additem');state.menu[ci].items.push({name:'',desc:'',price:'',veg:false});renderMenu();pushPreview();};});
   box.querySelectorAll('[data-di]').forEach(function(b){b.onclick=function(){state.menu[+b.getAttribute('data-di')].items.splice(+b.getAttribute('data-dj'),1);renderMenu();pushPreview();};});
-  box.querySelectorAll('input[data-ci][data-ii]').forEach(function(el){var ev=el.type==='checkbox'?'change':'input';el.addEventListener(ev,function(){var it=state.menu[+el.getAttribute('data-ci')].items[+el.getAttribute('data-ii')];var k=el.getAttribute('data-k');it[k]=el.type==='checkbox'?el.checked:el.value;pushPreview();});});}
+  box.querySelectorAll('input[data-ci][data-ii]').forEach(function(el){var ev=el.type==='checkbox'?'change':'input';el.addEventListener(ev,function(){var it=state.menu[+el.getAttribute('data-ci')].items[+el.getAttribute('data-ii')];var k=el.getAttribute('data-k');it[k]=el.type==='checkbox'?el.checked:el.value;pushPreview();});});
+  box.querySelectorAll('.mfile').forEach(function(el){el.addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var ci=+el.getAttribute('data-mci'),ii=+el.getAttribute('data-mii');fileToImg(f,function(im){state.menu[ci].items[ii].img=sqData(im,480);renderMenu();pushPreview();});});});
+  box.querySelectorAll('.mclear').forEach(function(b){b.onclick=function(){state.menu[+b.getAttribute('data-mci')].items[+b.getAttribute('data-mii')].img='';renderMenu();pushPreview();};});}
 $('addCat').onclick=function(){state.menu=state.menu||[];state.menu.push({cat:'新カテゴリ',items:[{name:'',desc:'',price:'',veg:false}]});renderMenu();pushPreview();};
 
 /* ---------- イベント ---------- */
@@ -311,8 +328,11 @@ function renderEvents(){var box=$('eventList');box.innerHTML='';(state.events||[
   d.innerHTML='<div class="top"><span class="t">お知らせ '+(i+1)+'</span><button class="chip" data-up="'+i+'" type="button">↑</button><button class="chip" data-down="'+i+'" type="button">↓</button><button class="chip del" data-del="'+i+'" type="button">削除</button></div>'+
     '<div class="row"><input type="date" data-i="'+i+'" data-k="date" value="'+esc(ev.date||'')+'"><input type="text" placeholder="タグ 例:イベント" data-i="'+i+'" data-k="tag" value="'+esc(ev.tag||'')+'"></div>'+
     '<input type="text" placeholder="タイトル" data-i="'+i+'" data-k="title" value="'+esc(ev.title||'')+'" style="margin-top:5px">'+
-    '<textarea placeholder="説明（任意）" data-i="'+i+'" data-k="desc" style="margin-top:5px;min-height:56px">'+esc(ev.desc||'')+'</textarea>';
+    '<textarea placeholder="説明（任意）" data-i="'+i+'" data-k="desc" style="margin-top:5px;min-height:56px">'+esc(ev.desc||'')+'</textarea>'+
+    '<div style="display:flex;gap:10px;margin-top:6px"><img class="thumb"'+(ev.img?' src="'+esc(ev.img)+'"':' style="display:none"')+' data-ei="'+i+'"><div style="flex:1"><input type="file" accept="image/*" class="efile" data-ei="'+i+'"><div class="foot-actions"><button class="chip eclear" data-ei="'+i+'" type="button">写真を消す</button></div></div></div>';
   box.appendChild(d);});
+  box.querySelectorAll('.efile').forEach(function(el){el.addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var i=+el.getAttribute('data-ei');fileToImg(f,function(im){state.events[i].img=fitData(im,900);renderEvents();pushPreview();});});});
+  box.querySelectorAll('.eclear').forEach(function(b){b.onclick=function(){state.events[+b.getAttribute('data-ei')].img='';renderEvents();pushPreview();};});
   bindList('eventList','events',renderEvents);}
 $('addEvent').onclick=function(){state.events=state.events||[];state.events.unshift({date:'',tag:'お知らせ',title:'',desc:'',img:''});renderEvents();pushPreview();};
 
