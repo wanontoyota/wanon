@@ -82,6 +82,7 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .tile .ico{width:41px;height:41px;color:var(--brand)}
 .tile .ico.ico-big{width:48px;height:48px}
 .tile .t{font-weight:800;font-size:14.5px;color:#2b2620}
+.tile.sm-t .t{font-size:13px}
 .tile .d{font-size:12.5px;color:#2b2620;margin-top:3px}
 .story{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin:18px 0 0;box-shadow:var(--shadow)}
 .story h3{font-family:"Zen Maru Gothic";margin:0 0 12px;font-size:18px;color:var(--olive)}
@@ -571,7 +572,7 @@ const TILES=[
   {t:'作品ショップ',d:'手しごとの品',ic:'shop',go:'shop'},
   {t:'ポイント',d:'スタンプを貯める',ic:'point',go:'point'},
 ];
-$('tiles').innerHTML=TILES.map(x=>'<div class="tile" data-go="'+x.go+'"><div class="ico-wrap"><div class="ico'+(x.ic==='menu'?' ico-big':'')+'">'+svg(x.ic)+'</div></div><div class="t">'+x.t+'</div><div class="d">'+x.d+'</div></div>').join('');
+$('tiles').innerHTML=TILES.map(x=>'<div class="tile'+((x.go==='cal'||x.go==='shop')?' sm-t':'')+'" data-go="'+x.go+'"><div class="ico-wrap"><div class="ico'+(x.ic==='menu'?' ico-big':'')+'">'+svg(x.ic)+'</div></div><div class="t">'+x.t+'</div><div class="d">'+x.d+'</div></div>').join('');
 
 /* ---- 営業状態（今日） ---- */
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -694,9 +695,12 @@ $('addrRow').href='https://maps.google.com/?q='+encodeURIComponent(CONFIG.addres
 $('telV').textContent=CONFIG.tel; $('telRow').href='tel:'+(CONFIG.tel||'').replace(/[^0-9+]/g,'');
 $('hoursV').textContent=CONFIG.hours;
 var hn=$('hoursNote');if(hn){hn.textContent=CONFIG.hoursNote||'';hn.style.display=CONFIG.hoursNote?'':'none';}
-var snsHTML=(CONFIG.sns||[]).map(s=>'<a href="'+esc(s.url)+'" target="_blank" rel="noopener"><div class="ico">'+svg(s.type)+'</div>'+esc(s.label)+'</a>').join('');
-var snsR=$('snsRow');if(snsR){snsR.innerHTML=snsHTML;}
-var snsH=$('snsHome');if(snsH){snsH.innerHTML=snsHTML;snsH.style.display=snsHTML?'':'none';}
+function igGrad(){return '<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none"><defs><linearGradient id="wanonIg" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#feda75"/><stop offset=".28" stop-color="#fa7e1e"/><stop offset=".5" stop-color="#d62976"/><stop offset=".72" stop-color="#962fbf"/><stop offset="1" stop-color="#4f5bd5"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="6" fill="url(#wanonIg)"/><rect x="6.6" y="6.6" width="10.8" height="10.8" rx="3.3" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3.1" stroke="#fff" stroke-width="2"/><circle cx="17" cy="7" r="1.15" fill="#fff"/></svg>';}
+function snsA(s,colored){var ic=(colored&&s.type==='instagram')?igGrad():svg(s.type);return '<a href="'+esc(s.url)+'" target="_blank" rel="noopener"><div class="ico">'+ic+'</div>'+esc(s.label)+'</a>';}
+var snsAcc=(CONFIG.sns||[]).map(s=>snsA(s,false)).join('');
+var snsHm=(CONFIG.sns||[]).map(s=>snsA(s,true)).join('');
+var snsR=$('snsRow');if(snsR){snsR.innerHTML=snsAcc;}
+var snsH=$('snsHome');if(snsH){snsH.innerHTML=snsHm;snsH.style.display=snsHm?'':'none';}
 
 /* ---- お知らせ・イベント ---- */
 const WD=['日','月','火','水','木','金','土'];
