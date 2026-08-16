@@ -144,6 +144,10 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .mm-price .mm-tax{font-size:12px;color:var(--muted);font-weight:600;margin-left:4px}
 .mm-al{font-size:12.5px;color:#a8734a;background:#faf2ea;border-radius:10px;padding:9px 12px;margin-top:12px;line-height:1.6}
 .mm-al b{color:#8a5a30}
+.mm-stock{font-size:12.5px;color:var(--muted);font-weight:600;margin-left:8px}
+.mm-order{display:block;text-align:center;background:var(--brand);color:#fff;border-radius:12px;padding:13px;font-size:14.5px;font-weight:800;text-decoration:none;margin-top:16px}
+.mm-order.minne{background:#e95464}
+.mm-order.soldout{background:#cbc4b6;pointer-events:none}
 /* 上に戻る */
 .to-top{position:fixed;right:16px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:60;width:44px;height:44px;border-radius:50%;border:none;background:var(--brand-d);color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.35);cursor:pointer;display:none;align-items:center;justify-content:center;opacity:.92}
 .to-top svg{width:22px;height:22px}
@@ -181,7 +185,8 @@ h2.sec{font-family:"Zen Maru Gothic";font-size:20px;font-weight:700;margin:22px 
 .minne-btn .mb-tx small{font-size:11.5px;color:var(--muted)}
 .minne-btn .mb-ch{color:#e95464;font-size:20px;font-weight:700;flex:none}
 .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 0}
-.pcard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;cursor:pointer}
+.pcard:active{transform:scale(.98)}
 .pcard img{width:100%;aspect-ratio:1;object-fit:cover;background:#efe8da}
 .pcard .pb{padding:10px 11px 12px;flex:1;display:flex;flex-direction:column}
 .pcard .pn{font-weight:700;font-size:13.5px;line-height:1.4}
@@ -650,11 +655,21 @@ function orderLink(name){const o=CONFIG.orderVia||{};
   if(o.type==='mail'){return 'mailto:'+o.url+'?subject='+encodeURIComponent('作品のお問い合わせ: '+name);}
   return o.url||'#';
 }
-$('shopGrid').innerHTML=CONFIG.works.map(w=>{
+function openShopModal(i){
+  var w=(CONFIG.works||[])[i];if(!w)return;
+  var img=w.img?'<img class="mm-img" src="'+esc(w.img)+'" alt="">':'';
+  var desc=w.desc?'<div class="mm-desc">'+esc(w.desc)+'</div>':'';
+  var pr=w.price?'<div class="mm-price">'+esc(w.price)+(w.stock?'<span class="mm-stock">'+esc(w.stock)+'</span>':'')+'</div>':'';
+  var btn=w.soldout?'<span class="mm-order soldout">完売しました</span>':(w.buyUrl?'<a class="mm-order minne" href="'+esc(w.buyUrl)+'" target="_blank" rel="noopener">minneで購入</a>':'<a class="mm-order" href="'+esc(orderLink(w.name))+'" target="_blank" rel="noopener">注文・お問い合わせ</a>');
+  $('menuModalBody').innerHTML=img+'<div class="mm-body"><div class="mm-name">'+esc(w.name)+'</div>'+desc+pr+btn+'</div>';
+  $('menuModal').style.display='';
+}
+$('shopGrid').innerHTML=CONFIG.works.map((w,i)=>{
   const img=w.img?'<img src="'+esc(w.img)+'" alt="">':'<img alt="" style="background:#efe8da">';
   const btn=w.soldout?'<span class="order soldout">完売しました</span>':(w.buyUrl?'<a class="order minne" href="'+esc(w.buyUrl)+'" target="_blank" rel="noopener">minneで購入</a>':'<a class="order" href="'+esc(orderLink(w.name))+'" target="_blank" rel="noopener">注文・お問い合わせ</a>');
-  return '<div class="pcard">'+img+'<div class="pb"><div class="pn">'+esc(w.name)+'</div>'+(w.desc?'<div class="pd">'+esc(w.desc)+'</div>':'<div class="pd"></div>')+'<div class="pp">'+esc(w.price)+' <span class="pstock">'+esc(w.stock||'')+'</span></div>'+btn+'</div></div>';
+  return '<div class="pcard" data-wi="'+i+'">'+img+'<div class="pb"><div class="pn">'+esc(w.name)+'</div>'+(w.desc?'<div class="pd">'+esc(w.desc)+'</div>':'<div class="pd"></div>')+'<div class="pp">'+esc(w.price)+' <span class="pstock">'+esc(w.stock||'')+'</span></div>'+btn+'</div></div>';
 }).join('');
+$('shopGrid').querySelectorAll('.pcard').forEach(function(el){el.onclick=function(e){if(e.target.closest('.order'))return;openShopModal(+el.getAttribute('data-wi'));};});
 $('shopNote').textContent=CONFIG.shopNote||'';
 var mb=$('minneBtn');if(mb){if(CONFIG.minneUrl){mb.href=CONFIG.minneUrl;mb.style.display='';}else{mb.style.display='none';}}
 
